@@ -22,7 +22,9 @@ const LAYOUT: VertexAttributeLayout = {
     { byteOffset: 0, format: 'float32x3', semantic: 'position' },
     { byteOffset: 12, format: 'float32x4', semantic: 'color0' },
   ],
-  stride: 28,
+  // WebGPU's Scene3D pipeline consumes its canonical 48-byte vertex record. GL still reads color0
+  // from the declared offset, while the trailing values provide the tangent/UV slots WGPU expects.
+  stride: 48,
 };
 
 // prettier-ignore
@@ -30,9 +32,9 @@ const geometry = createMeshGeometry({
   indices: new Uint16Array([0, 1, 2]),
   layout: LAYOUT,
   vertices: new Float32Array([
-    -0.3, -0.3, 0,   1, 0, 0, 1,
-    -0.3,  0.3, 0,   0, 1, 0, 1,
-     0.3,  0.3, 0,   0, 0, 1, 1,
+    -0.3, -0.3, 0,   1, 0, 0, 1,   0, 0, 0, 0, 0,
+    -0.3,  0.3, 0,   0, 1, 0, 1,   0, 0, 0, 0, 0,
+     0.3,  0.3, 0,   0, 0, 1, 1,   0, 0, 0, 0, 0,
   ]),
 });
 

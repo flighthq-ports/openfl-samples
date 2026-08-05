@@ -19,7 +19,7 @@ const srcDir = resolve(here, '../src');
 
 /**
  * Capability gradient rather than alphabetical: DOM reaches the fewest kinds, then Canvas, WebGL is
- * the default, WebGPU is what comes next -- DOM covers 21 samples, Canvas and WebGPU 22, and WebGL
+ * the default, WebGPU is what comes next -- DOM covers 21 samples, Canvas 22, WebGPU 25, and WebGL
  * all 26.
  *
  * "Fewest kinds" is not "fallback": HtmlView and NativeText render only on DOM, so the gradient
