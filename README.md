@@ -44,12 +44,13 @@ Variants only exist once built. In dev the server runs one backend at a time, so
 `RENDERER=canvas npm run dev`; visiting a variant URL there explains as much rather than silently
 serving the gallery.
 
-Coverage is uneven, and the gaps are backend boundaries rather than unfinished ports — Canvas and
-DOM cannot express Stage3D content, so `hello-triangle` and the `stage3d-*` samples are WebGL only:
+Coverage is uneven where backend boundaries are intentional — Canvas and DOM cannot express Stage3D
+content, so `hello-triangle` and the `stage3d-*` samples are WebGL only. `glsl-bitmap` is also WebGL
+only because its subject is a custom GLSL shader:
 
 | backend | samples |
 | --- | --- |
 | WebGL | 26 |
-| Canvas | 19 |
+| Canvas | 22 |
 | WebGPU | 10 |
 | DOM | 9 |
