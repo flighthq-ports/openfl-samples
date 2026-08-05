@@ -19,8 +19,8 @@ const srcDir = resolve(here, '../src');
 
 /**
  * Capability gradient rather than alphabetical: DOM reaches the fewest kinds, then Canvas, WebGL is
- * the default, WebGPU is what comes next -- DOM covers 21 samples, Canvas 19, WebGL all 26, so
- * top-to-bottom is roughly least-to-most expressive for 2D scene content.
+ * the default, WebGPU is what comes next -- DOM covers 21 samples, Canvas and WebGPU 22, and WebGL
+ * all 26.
  *
  * "Fewest kinds" is not "fallback": HtmlView and NativeText render only on DOM, so the gradient
  * describes reach across these samples, not which backend you would reach for.

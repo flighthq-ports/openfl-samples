@@ -44,17 +44,16 @@ Variants only exist once built. In dev the server runs one backend at a time, so
 `RENDERER=canvas npm run dev`; visiting a variant URL there explains as much rather than silently
 serving the gallery.
 
-Coverage is uneven, and every gap is a backend boundary rather than an unfinished port. Canvas and
-DOM cannot express Stage3D content, so `hello-triangle` and the `stage3d-*` samples are WebGL only,
-and `glsl-bitmap` is WebGL only because its subject is a custom GLSL shader. WebGPU is the exception:
-its gaps are simply samples nobody has ported yet.
+Coverage is uneven, and every gap is a backend boundary rather than an unfinished port. Scene3D
+currently has only a WebGL renderer, so `hello-triangle` and the `stage3d-*` samples are WebGL only,
+and `glsl-bitmap` is WebGL only because its subject is a custom GLSL shader.
 
 | backend | samples | what it cannot reach |
 | --- | --- | --- |
 | WebGL | 26 | — |
 | Canvas | 22 | `glsl-bitmap`, `hello-triangle`, and the two `stage3d-*` samples |
 | DOM | 21 | the four Canvas cannot reach, plus `bunnymark` — there is no DOM `QuadBatch` renderer |
-| WebGPU | 10 | nothing structural; the rest are unported |
+| WebGPU | 22 | `glsl-bitmap`, `hello-triangle`, and the two `stage3d-*` samples |
 
 DOM's boundary is the sharpest of the four, because it is drawn by what `scene2d-dom` provides
 rather than by porting effort. It renders `Shape`, `Sprite`, `TextLabel`, `RichText`, `MorphShape`
