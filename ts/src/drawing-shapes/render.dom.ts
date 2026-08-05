@@ -1,5 +1,7 @@
 import type { DisplayObject } from '@flighthq/sdk';
 import {
+  createCanvasShapeRasterizer,
+  createCanvasTextureResolvers,
   createDomRenderState,
   defaultCanvasBeginFill,
   defaultCanvasCurveTo,
@@ -13,6 +15,7 @@ import {
   defaultDomShapeRenderer,
   prepareScene2DRender,
   registerCanvasShapeCommands,
+  registerDomShapeRasterizer,
   registerRenderer,
   renderDomBackground,
   renderDomScene2D,
@@ -42,6 +45,9 @@ registerCanvasShapeCommands(state, [
   defaultCanvasLineTo,
   defaultCanvasMoveTo,
 ]);
+// The DOM shape renderer owns no path drawing of its own: it allocates a <canvas> per Shape and
+// hands the commands to the registered rasterizer. Without this, every Shape silently draws nothing.
+registerDomShapeRasterizer(state, createCanvasShapeRasterizer(createCanvasTextureResolvers()));
 export const scale = 1;
 
 export function render(root: DisplayObject): void {

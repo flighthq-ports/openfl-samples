@@ -18,9 +18,12 @@ const here = dirname(fileURLToPath(import.meta.url));
 const srcDir = resolve(here, '../src');
 
 /**
- * Capability gradient rather than alphabetical: DOM and Canvas are fallbacks, WebGL is the default,
- * WebGPU is what comes next. The coverage counts follow the same axis -- DOM reaches 9 samples,
- * Canvas 19, WebGL all 26 -- so top-to-bottom is also least-to-most expressive.
+ * Capability gradient rather than alphabetical: DOM reaches the fewest kinds, then Canvas, WebGL is
+ * the default, WebGPU is what comes next -- DOM covers 21 samples, Canvas 19, WebGL all 26, so
+ * top-to-bottom is roughly least-to-most expressive for 2D scene content.
+ *
+ * "Fewest kinds" is not "fallback": HtmlView and NativeText render only on DOM, so the gradient
+ * describes reach across these samples, not which backend you would reach for.
  */
 const BACKEND_ORDER = ['dom', 'canvas', 'webgl', 'webgpu'];
 

@@ -4,8 +4,13 @@ import {
   createCanvasTextureResolvers,
   createDomRenderState,
   defaultCanvasBeginFill,
+  defaultCanvasDrawCircle,
+  defaultCanvasDrawEllipse,
   defaultCanvasDrawRectangle,
-  defaultCanvasEndFill,
+  defaultCanvasDrawRoundRectangle,
+  defaultCanvasLineStyle,
+  defaultCanvasLineTo,
+  defaultCanvasMoveTo,
   defaultDomShapeRenderer,
   defaultDomSpriteRenderer,
   defaultDomTextLabelRenderer,
@@ -21,12 +26,15 @@ import {
   TextLabelKind,
 } from '@flighthq/sdk';
 
-export const container = document.createElement('div');
-container.style.position = 'relative';
+const element = document.createElement('div');
+element.style.position = 'relative';
+element.style.width = '670px';
+element.style.height = '600px';
 document.getElementById('app')?.remove();
-document.body.appendChild(container);
+document.body.appendChild(element);
 
-export const state = createDomRenderState(container, {
+export const container = element;
+export const state = createDomRenderState(element, {
   sceneGraphSyncPolicy: 'requiresInvalidation',
   backgroundColor: 0xffffffff,
 });
@@ -34,29 +42,21 @@ registerDomImageTextureResolver(state);
 registerRenderer(state, SpriteKind, defaultDomSpriteRenderer);
 registerRenderer(state, ShapeKind, defaultDomShapeRenderer);
 registerRenderer(state, TextLabelKind, defaultDomTextLabelRenderer);
-registerCanvasShapeCommands(state, [defaultCanvasBeginFill, defaultCanvasDrawRectangle, defaultCanvasEndFill]);
-// The DOM shape renderer owns no path drawing of its own: it allocates a <canvas> per Shape and
-// hands the commands to the registered rasterizer. Without this, every Shape silently draws nothing.
+registerCanvasShapeCommands(state, [
+  defaultCanvasBeginFill,
+  defaultCanvasDrawCircle,
+  defaultCanvasDrawEllipse,
+  defaultCanvasDrawRectangle,
+  defaultCanvasDrawRoundRectangle,
+  defaultCanvasLineStyle,
+  defaultCanvasLineTo,
+  defaultCanvasMoveTo,
+]);
 registerDomShapeRasterizer(state, createCanvasShapeRasterizer(createCanvasTextureResolvers()));
 export const scale = 1;
-
-export function setSize(w: number, h: number): void {
-  container.style.width = `${w}px`;
-  container.style.height = `${h}px`;
-}
 
 export function render(root: DisplayObject): void {
   if (!prepareScene2DRender(state, root)) return;
   renderDomBackground(state);
   renderDomScene2D(state, root);
-}
-
-// The GL path bakes the blur into an offscreen pass. DOM would not need to — a blurred element is
-// one CSS declaration, and `scene2d-dom` has the binding for it (enableDomCssFilterSupport /
-// setDomCssFilter) — but neither is re-exported from `@flighthq/sdk`, so a sample cannot reach it
-// without importing a transitive package directly. Until the SDK publishes them, DOM renders the
-// panel unfiltered.
-export function applyBackgroundBlur(node: DisplayObject): () => void {
-  void node;
-  return () => {};
 }

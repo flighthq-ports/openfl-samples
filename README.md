@@ -44,13 +44,25 @@ Variants only exist once built. In dev the server runs one backend at a time, so
 `RENDERER=canvas npm run dev`; visiting a variant URL there explains as much rather than silently
 serving the gallery.
 
-Coverage is uneven where backend boundaries are intentional — Canvas and DOM cannot express Stage3D
-content, so `hello-triangle` and the `stage3d-*` samples are WebGL only. `glsl-bitmap` is also WebGL
-only because its subject is a custom GLSL shader:
+Coverage is uneven, and every gap is a backend boundary rather than an unfinished port. Canvas and
+DOM cannot express Stage3D content, so `hello-triangle` and the `stage3d-*` samples are WebGL only,
+and `glsl-bitmap` is WebGL only because its subject is a custom GLSL shader. WebGPU is the exception:
+its gaps are simply samples nobody has ported yet.
 
-| backend | samples |
-| --- | --- |
-| WebGL | 26 |
-| Canvas | 22 |
-| WebGPU | 10 |
-| DOM | 9 |
+| backend | samples | what it cannot reach |
+| --- | --- | --- |
+| WebGL | 26 | — |
+| Canvas | 22 | `glsl-bitmap`, `hello-triangle`, and the two `stage3d-*` samples |
+| DOM | 21 | the four Canvas cannot reach, plus `bunnymark` — there is no DOM `QuadBatch` renderer |
+| WebGPU | 10 | nothing structural; the rest are unported |
+
+DOM's boundary is the sharpest of the four, because it is drawn by what `scene2d-dom` provides
+rather than by porting effort. It renders `Shape`, `Sprite`, `TextLabel`, `RichText`, `MorphShape`
+and `Scale9Shape`; it has no `QuadBatch`, `Tilemap`, `BitmapText` or `ParticleEmitter2D` renderer,
+and there is no `scene3d-dom` at all. It is also not purely a subset — `HtmlView` and `NativeText`
+render *only* on DOM.
+
+One wiring detail is easy to get wrong and fails silently. `defaultDomShapeRenderer` draws no paths
+itself: it allocates a `<canvas>` per `Shape` and hands the commands to a registered rasterizer. A
+DOM state that registers shape *commands* but never calls `registerDomShapeRasterizer` drops every
+shape without an error. Every DOM sample here that draws a `Shape` registers one.

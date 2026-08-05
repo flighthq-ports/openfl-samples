@@ -31,7 +31,7 @@ import {
   wakePhysics2DBody,
 } from '@flighthq/sdk';
 
-import { canvas, render, scale } from './render';
+import { container, render, scale } from './render';
 
 // The source lays its scene out for a 500x400 stage at 30 pixels per metre. The corpus standard is
 // 800x600, so the layout below is the source's scaled 1.6x to fill it, and the pixels-per-metre scales
@@ -189,14 +189,14 @@ function bodyAt(worldX: number, worldY: number): RigidBody2D | null {
 let drag: Physics2DMouseJoint | null = null;
 
 function pointerWorld(event: PointerEvent): { x: number; y: number } {
-  const bounds = canvas.getBoundingClientRect();
+  const bounds = container.getBoundingClientRect();
   return {
     x: ((event.clientX - bounds.left) / scale) * PHYSICS_SCALE,
     y: ((event.clientY - bounds.top) / scale) * PHYSICS_SCALE,
   };
 }
 
-canvas.addEventListener('pointerdown', (event) => {
+container.addEventListener('pointerdown', (event) => {
   const point = pointerWorld(event);
   const body = bodyAt(point.x, point.y);
   if (body === null) return;
@@ -224,10 +224,10 @@ canvas.addEventListener('pointerdown', (event) => {
 
   addPhysics2DJoint(world, joint);
   drag = joint;
-  canvas.setPointerCapture(event.pointerId);
+  container.setPointerCapture(event.pointerId);
 });
 
-canvas.addEventListener('pointermove', (event) => {
+container.addEventListener('pointermove', (event) => {
   if (drag === null) return;
   const point = pointerWorld(event);
   drag.targetX = point.x;
@@ -240,8 +240,8 @@ function endDrag(): void {
   drag = null;
 }
 
-canvas.addEventListener('pointerup', endDrag);
-canvas.addEventListener('pointercancel', endDrag);
+container.addEventListener('pointerup', endDrag);
+container.addEventListener('pointercancel', endDrag);
 
 function resetIfLost(view: BodyView): void {
   if (view.body.type !== 'dynamic') return;

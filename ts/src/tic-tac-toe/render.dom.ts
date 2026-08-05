@@ -3,27 +3,24 @@ import {
   createCanvasShapeRasterizer,
   createCanvasTextureResolvers,
   createDomRenderState,
-  defaultCanvasBeginFill,
-  defaultCanvasDrawRectangle,
+  defaultCanvasDrawCircle,
+  defaultCanvasLineStyle,
+  defaultCanvasLineTo,
+  defaultCanvasMoveTo,
   defaultDomShapeRenderer,
-  defaultDomSpriteRenderer,
   prepareScene2DRender,
   registerCanvasShapeCommands,
-  registerDomImageTextureResolver,
   registerDomShapeRasterizer,
   registerRenderer,
   renderDomBackground,
   renderDomScene2D,
   ShapeKind,
-  SpriteKind,
 } from '@flighthq/sdk';
 
 const element = document.createElement('div');
 element.style.position = 'relative';
-element.style.width = '800px';
-element.style.height = '600px';
-document.body.style.margin = '0';
-document.body.style.background = '#fff';
+element.style.width = '170px';
+element.style.height = '170px';
 document.getElementById('app')?.remove();
 document.body.appendChild(element);
 
@@ -32,12 +29,13 @@ export const state = createDomRenderState(element, {
   sceneGraphSyncPolicy: 'requiresInvalidation',
   backgroundColor: 0xffffffff,
 });
-registerDomImageTextureResolver(state);
-registerRenderer(state, SpriteKind, defaultDomSpriteRenderer);
 registerRenderer(state, ShapeKind, defaultDomShapeRenderer);
-registerCanvasShapeCommands(state, [defaultCanvasBeginFill, defaultCanvasDrawRectangle]);
-// The DOM shape renderer owns no path drawing of its own: it allocates a <canvas> per Shape and
-// hands the commands to the registered rasterizer. Without this, every Shape silently draws nothing.
+registerCanvasShapeCommands(state, [
+  defaultCanvasDrawCircle,
+  defaultCanvasLineStyle,
+  defaultCanvasLineTo,
+  defaultCanvasMoveTo,
+]);
 registerDomShapeRasterizer(state, createCanvasShapeRasterizer(createCanvasTextureResolvers()));
 export const scale = 1;
 
@@ -45,9 +43,4 @@ export function render(root: DisplayObject): void {
   if (!prepareScene2DRender(state, root)) return;
   renderDomBackground(state);
   renderDomScene2D(state, root);
-}
-
-export function setSize(w: number, h: number): void {
-  element.style.width = `${w}px`;
-  element.style.height = `${h}px`;
 }
