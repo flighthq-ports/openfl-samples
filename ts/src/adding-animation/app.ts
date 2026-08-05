@@ -37,7 +37,7 @@ container.y = STAGE_HEIGHT / 2;
 addNodeChild(container, bitmap);
 addNodeChild(main, container);
 
-const image = await loadImageResourceFromUrl('/images/openfl_logo.png');
+const image = await loadImageResourceFromUrl('images/openfl_logo.png');
 bitmap.data.texture = createTexture({ source: image });
 bitmap.x = -image.width / 2;
 bitmap.y = -image.height / 2;

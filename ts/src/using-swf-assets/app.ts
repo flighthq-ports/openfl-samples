@@ -15,7 +15,7 @@ import { render, scale, setSize } from './render';
 
 registerDeflateDecompressor();
 
-const response = await fetch('/swf/layout.swf');
+const response = await fetch('swf/layout.swf');
 if (!response.ok) throw new Error(`Unable to load layout SWF: ${response.status}`);
 
 function requireValue<T>(value: T | null, message: string): T {

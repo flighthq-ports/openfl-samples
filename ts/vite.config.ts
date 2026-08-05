@@ -41,6 +41,22 @@ function selectRenderer(renderer?: string): Plugin {
   };
 }
 
+/**
+ * Every page gets a <base href> so the relative URLs in sample code resolve against the site root
+ * rather than the page's own depth. Samples live at /<sample>/ and their variants a level deeper at
+ * /<sample>/<backend>/, and on GitHub Pages the whole site hangs off /<repo>/ -- one base tag makes
+ * `images/openfl.png` correct in all of those without the samples knowing where they are deployed.
+ */
+function injectBase(sitePath: string): Plugin {
+  return {
+    name: 'flight-base-href',
+    transformIndexHtml: {
+      order: 'pre',
+      handler: (html) => html.replace('<head>', `<head>\n    <base href="${sitePath}" />`),
+    },
+  };
+}
+
 /** thumbs/ is generated for publishing and gitignored; copy it into the build when it exists. */
 function copyThumbs(): Plugin {
   return {
@@ -104,6 +120,10 @@ function explainVariantsInDev(): Plugin {
 }
 
 export default defineConfig(() => {
+  // GitHub Pages serves a project site from /<repo>/, so the deployed base is not the domain root.
+  // BASE_PATH is set by the publish workflow; locally it stays '/'.
+  const sitePath = process.env.BASE_PATH ?? '/';
+
   const renderer = process.env.RENDERER;
 
   // Building one sample alone is what makes a per-sample bundle size meaningful; with every entry
@@ -132,11 +152,17 @@ export default defineConfig(() => {
     // src/ is the web root, so a sample is served at /<name>/ rather than /src/<name>/ — the
     // directory layout should not show up in the URL a visitor sees.
     root: srcDir,
-    base: variant ? `/${renderer}/` : '/',
+    base: variant ? `${sitePath}${renderer}/` : sitePath,
     // Assets are referenced by root-absolute URL, so variant builds share the single copy emitted
     // by the default build instead of duplicating 11 MB four times over.
     publicDir,
-    plugins: [selectRenderer(renderer), explainVariantsInDev(), copyThumbs(), copySizes()],
+    plugins: [
+      injectBase(sitePath),
+      selectRenderer(renderer),
+      explainVariantsInDev(),
+      copyThumbs(),
+      copySizes(),
+    ],
     build: {
       target: 'es2022',
       outDir: variant ? resolve(outDir, renderer!) : outDir,

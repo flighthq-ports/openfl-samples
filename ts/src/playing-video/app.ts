@@ -33,7 +33,7 @@ const root = createDisplayObject();
 root.scaleX = scale;
 root.scaleY = scale;
 
-const videoSource = await loadVideoResourceFromUrl('/videos/example.mp4');
+const videoSource = await loadVideoResourceFromUrl('videos/example.mp4');
 
 const videoTexture = createVideoTexture(videoSource);
 const videoNode = createSprite();

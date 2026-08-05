@@ -23,7 +23,7 @@ const root = createDisplayObject();
 root.scaleX = scale;
 root.scaleY = scale;
 
-const image = await loadImageResourceFromUrl('/images/openfl_icon.png');
+const image = await loadImageResourceFromUrl('images/openfl_icon.png');
 const imageSurface = captureBitmapFromImageResource(image);
 const imageRegion = createBitmapRegion(imageSurface);
 

@@ -33,20 +33,20 @@ import { applyBackgroundBlur, container, render, scale, setSize } from './render
 const audioContext = new AudioContext();
 
 const [bgImage, footerImage, logoImage, font, theme, sound3, sound4, sound5, ...tileImages] = await Promise.all([
-  loadImageResourceFromUrl('/images/background_tile.png'),
-  loadImageResourceFromUrl('/images/center_bottom.png'),
-  loadImageResourceFromUrl('/images/logo.png'),
-  loadFontFromUrl('/fonts/FreebooterUpdated.ttf', 'FreebooterUpdated'),
-  loadAudioResourceFromUrls(audioContext, [{ url: '/sounds/theme.ogg' }, { url: '/sounds/theme.mp3' }]),
-  loadAudioResourceFromUrls(audioContext, [{ url: '/sounds/sound3.ogg' }, { url: '/sounds/sound3.mp3' }]),
-  loadAudioResourceFromUrls(audioContext, [{ url: '/sounds/sound4.ogg' }, { url: '/sounds/sound4.mp3' }]),
-  loadAudioResourceFromUrls(audioContext, [{ url: '/sounds/sound5.ogg' }, { url: '/sounds/sound5.mp3' }]),
-  loadImageResourceFromUrl('/images/game_bear.png'),
-  loadImageResourceFromUrl('/images/game_bunny_02.png'),
-  loadImageResourceFromUrl('/images/game_carrot.png'),
-  loadImageResourceFromUrl('/images/game_lemon.png'),
-  loadImageResourceFromUrl('/images/game_panda.png'),
-  loadImageResourceFromUrl('/images/game_piratePig.png'),
+  loadImageResourceFromUrl('images/background_tile.png'),
+  loadImageResourceFromUrl('images/center_bottom.png'),
+  loadImageResourceFromUrl('images/logo.png'),
+  loadFontFromUrl('fonts/FreebooterUpdated.ttf', 'FreebooterUpdated'),
+  loadAudioResourceFromUrls(audioContext, [{ url: 'sounds/theme.ogg' }, { url: 'sounds/theme.mp3' }]),
+  loadAudioResourceFromUrls(audioContext, [{ url: 'sounds/sound3.ogg' }, { url: 'sounds/sound3.mp3' }]),
+  loadAudioResourceFromUrls(audioContext, [{ url: 'sounds/sound4.ogg' }, { url: 'sounds/sound4.mp3' }]),
+  loadAudioResourceFromUrls(audioContext, [{ url: 'sounds/sound5.ogg' }, { url: 'sounds/sound5.mp3' }]),
+  loadImageResourceFromUrl('images/game_bear.png'),
+  loadImageResourceFromUrl('images/game_bunny_02.png'),
+  loadImageResourceFromUrl('images/game_carrot.png'),
+  loadImageResourceFromUrl('images/game_lemon.png'),
+  loadImageResourceFromUrl('images/game_panda.png'),
+  loadImageResourceFromUrl('images/game_piratePig.png'),
 ]);
 
 const sounds = [theme, sound3, sound4, sound5];

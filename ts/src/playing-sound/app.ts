@@ -47,8 +47,8 @@ function ensureAudioContext(): AudioContext {
 }
 
 loadAudioResourceFromUrls(ensureAudioContext(), [
-  { url: '/sounds/stars.ogg' },
-  { url: '/sounds/stars.mp3' },
+  { url: 'sounds/stars.ogg' },
+  { url: 'sounds/stars.mp3' },
 ]).then(
   (resource: AudioResource) => {
     sound = resource;

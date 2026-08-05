@@ -2,7 +2,7 @@ import { addNodeChild, createDisplayObject, createTextLabel, loadFontFromUrl } f
 
 import { render, scale } from './render';
 
-const font = await loadFontFromUrl('/fonts/KatamotzIkasi.woff', 'Katamotz Ikasi');
+const font = await loadFontFromUrl('fonts/KatamotzIkasi.woff', 'Katamotz Ikasi');
 
 const root = createDisplayObject();
 root.scaleX = scale;

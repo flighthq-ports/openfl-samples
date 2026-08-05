@@ -45,15 +45,15 @@ const [
   indicatorDisposed,
   indicatorError,
 ] = await Promise.all([
-  Promise.all(sourceNames.map((name) => loadImageResourceFromUrl(`/images/${SIZE}/${name}.png`))),
-  loadImageResourceFromUrl(`/images/${SIZE}/0.png`),
-  loadImageResourceFromUrl(`/images/${SIZE}/minus1.png`),
-  loadImageResourceFromUrl(`/images/${SIZE}/minus2.png`),
-  loadImageResourceFromUrl(`/images/${SIZE}/minus3.png`),
-  loadImageResourceFromUrl(`/images/${SIZE}/minus4.png`),
-  loadImageResourceFromUrl(`/images/${SIZE}/null.png`),
-  loadImageResourceFromUrl(`/images/${SIZE}/disposed.png`),
-  loadImageResourceFromUrl(`/images/${SIZE}/error.png`),
+  Promise.all(sourceNames.map((name) => loadImageResourceFromUrl(`images/${SIZE}/${name}.png`))),
+  loadImageResourceFromUrl(`images/${SIZE}/0.png`),
+  loadImageResourceFromUrl(`images/${SIZE}/minus1.png`),
+  loadImageResourceFromUrl(`images/${SIZE}/minus2.png`),
+  loadImageResourceFromUrl(`images/${SIZE}/minus3.png`),
+  loadImageResourceFromUrl(`images/${SIZE}/minus4.png`),
+  loadImageResourceFromUrl(`images/${SIZE}/null.png`),
+  loadImageResourceFromUrl(`images/${SIZE}/disposed.png`),
+  loadImageResourceFromUrl(`images/${SIZE}/error.png`),
 ]);
 
 const sourceBitmaps: Bitmap[] = sourceImages.map((image) => captureBitmapFromImageResource(image));

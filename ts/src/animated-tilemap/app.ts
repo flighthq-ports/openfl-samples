@@ -29,7 +29,7 @@ const FRAME_DURATION = 133;
 const STAGE_WIDTH = 800;
 const STAGE_HEIGHT = 600;
 
-const source = await loadImageResourceFromUrl('/images/tileset.png');
+const source = await loadImageResourceFromUrl('images/tileset.png');
 const atlas = createTextureAtlas({ texture: createTexture({ source, sampler: createPixelArtSampler() }) });
 const sheet = createSpritesheet({ atlas });
 

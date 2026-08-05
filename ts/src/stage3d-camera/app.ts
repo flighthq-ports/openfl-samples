@@ -29,7 +29,7 @@ function updateVelocity(velocity: number, acceleration: number, max: number): nu
   return velocity / DAMPING;
 }
 
-const image = await loadImageResourceFromUrl('/images/openfl_icon_large.png');
+const image = await loadImageResourceFromUrl('images/openfl_icon_large.png');
 const texture = createTexture({ source: image });
 const scene = createScene3D();
 const material = createUnlitMaterial({ baseColor: 0xffffffff, baseColorMap: texture });

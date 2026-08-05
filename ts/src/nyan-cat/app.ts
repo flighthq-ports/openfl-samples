@@ -21,7 +21,7 @@ const STAGE_H = 600;
 
 registerDeflateDecompressor();
 
-const response = await fetch('/swf/library.swf');
+const response = await fetch('swf/library.swf');
 if (!response.ok) throw new Error(`Unable to load Nyan Cat SWF: ${response.status}`);
 
 const document = createScene2DFromSwf(new Uint8Array(await response.arrayBuffer()));

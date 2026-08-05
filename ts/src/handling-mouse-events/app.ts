@@ -21,7 +21,7 @@ import {
 
 import { container, render, scale } from './render';
 
-const image = await loadImageResourceFromUrl('/images/openfl_icon.png');
+const image = await loadImageResourceFromUrl('images/openfl_icon.png');
 const manager = createTweenManager();
 const root = createDisplayObject();
 root.scaleX = scale;

@@ -29,7 +29,7 @@ function updateVelocity(velocity: number, acceleration: number, max: number): nu
   return velocity / DAMPING;
 }
 
-const image = await loadImageResourceFromUrl('/images/checkers.png');
+const image = await loadImageResourceFromUrl('images/checkers.png');
 const texture = createTexture({ source: image });
 const scene = createScene3D();
 const material = createUnlitMaterial({ baseColor: 0xffffffff, baseColorMap: texture });

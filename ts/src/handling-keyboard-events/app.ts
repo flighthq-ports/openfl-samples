@@ -14,7 +14,7 @@ import {
 
 import { render, scale } from './render';
 
-const image = await loadImageResourceFromUrl('/images/openfl_icon.png');
+const image = await loadImageResourceFromUrl('images/openfl_icon.png');
 const root = createDisplayObject();
 root.scaleX = scale;
 root.scaleY = scale;

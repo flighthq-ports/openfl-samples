@@ -9,7 +9,7 @@ import {
 
 import { registerCustomShader, render, scale } from './render';
 
-const image = await loadImageResourceFromUrl('/images/openfl_icon_large.png');
+const image = await loadImageResourceFromUrl('images/openfl_icon_large.png');
 
 const root = createDisplayObject();
 root.scaleX = scale;

@@ -14,7 +14,7 @@ main.scaleY = scale;
 
 const bitmap = createSprite();
 
-const image = await loadImageResourceFromUrl('/images/openfl_icon_large.png');
+const image = await loadImageResourceFromUrl('images/openfl_icon_large.png');
 bitmap.data.texture = createTexture({ source: image });
 bitmap.x = (800 - image.width) / 2;
 bitmap.y = (600 - image.height) / 2;

@@ -21,15 +21,15 @@ const TEXT =
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
 
 const embeddedFonts = {
-  liberation: await loadFontFromUrl('/fonts/LiberationSerif-Regular.ttf', 'Liberation Serif Regular'),
-  nokia: await loadFontFromUrl('/fonts/nokiafc22.ttf', 'Nokia Cellphone FC Small'),
+  liberation: await loadFontFromUrl('fonts/LiberationSerif-Regular.ttf', 'Liberation Serif Regular'),
+  nokia: await loadFontFromUrl('fonts/nokiafc22.ttf', 'Nokia Cellphone FC Small'),
 };
 
 const comparisonImages = new Map<string, Awaited<ReturnType<typeof loadImageResourceFromUrl>>>();
 for (const renderer of ['flash', 'legacy', 'html5']) {
   for (let i = 0; i <= MAX_DEMO; i++) {
     const key = `${renderer}${i}`;
-    comparisonImages.set(key, await loadImageResourceFromUrl(`/img/${key}.png`));
+    comparisonImages.set(key, await loadImageResourceFromUrl(`img/${key}.png`));
   }
 }
 
