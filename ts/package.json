@@ -1,0 +1,39 @@
+{
+  "name": "@flighthq-ports/openfl-samples",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT",
+  "description": "OpenFL samples, ported to Flight.",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:renderers": "tsx scripts/build-renderers.ts",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "gallery": "tsx scripts/gallery.ts",
+    "thumbs": "tsx scripts/thumbs.ts",
+    "eject": "tsx scripts/eject.ts",
+    "sizes": "tsx scripts/size-table.ts",
+    "dist": "npm run thumbs && npm run sizes && npm run gallery && npm run build && npm run build:renderers",
+    "lint:assets": "tsx scripts/lint-assets.ts",
+    "check": "npm run typecheck && npm run lint:assets && npm run build"
+  },
+  "dependencies": {
+    "@flighthq/effects-gl": "^0.3.0-next.1704.8557784",
+    "@flighthq/scene3d": "^0.3.0-next.1704.8557784",
+    "@flighthq/sdk": "^0.3.0-next.1704.8557784",
+    "stats.js": "^0.17.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/stats.js": "^0.17.4",
+    "playwright": "^1.61.1",
+    "tsx": "^4.22.4",
+    "typescript": "^5.9.2",
+    "vite": "^7.0.2"
+  }
+}

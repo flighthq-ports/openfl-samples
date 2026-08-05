@@ -1,0 +1,61 @@
+import {
+  addNodeChild,
+  connectSignal,
+  createApplication,
+  createDisplayObject,
+  createSprite,
+  createTexture,
+  createTween,
+  createTweenManager,
+  easeOutElastic,
+  easeOutQuadratic,
+  invalidateNodeLocalTransform,
+  invalidateNodeRender,
+  loadImageResourceFromUrl,
+  startApplicationLoop,
+  updateTweens,
+} from '@flighthq/sdk';
+
+import { render, scale } from './render';
+
+const STAGE_WIDTH = 800;
+const STAGE_HEIGHT = 600;
+
+const manager = createTweenManager();
+const main = createDisplayObject();
+main.scaleX = scale;
+main.scaleY = scale;
+const container = createDisplayObject();
+const bitmap = createSprite();
+
+container.alpha = 0;
+container.scaleX = 0;
+container.scaleY = 0;
+container.x = STAGE_WIDTH / 2;
+container.y = STAGE_HEIGHT / 2;
+
+addNodeChild(container, bitmap);
+addNodeChild(main, container);
+
+const image = await loadImageResourceFromUrl('/images/openfl_logo.png');
+bitmap.data.texture = createTexture({ source: image });
+bitmap.x = -image.width / 2;
+bitmap.y = -image.height / 2;
+
+const alphaTween = createTween(manager, container, 3000, { alpha: 1 }, { ease: easeOutQuadratic });
+const scaleTween = createTween(
+  manager,
+  container,
+  6000,
+  { scaleX: 1, scaleY: 1 },
+  { delay: 600, ease: easeOutElastic },
+);
+connectSignal(alphaTween.onUpdate, () => invalidateNodeRender(container));
+connectSignal(scaleTween.onUpdate, () => invalidateNodeLocalTransform(container));
+
+const app = createApplication();
+connectSignal(app.onUpdate, (delta) => updateTweens(manager, delta));
+connectSignal(app.onRender, () => {
+  render(main);
+});
+startApplicationLoop(app);

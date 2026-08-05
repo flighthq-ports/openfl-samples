@@ -1,0 +1,140 @@
+import type { Bitmap, Image } from '@flighthq/sdk';
+import {
+  addNodeChild,
+  captureBitmapFromImageResource,
+  compareBitmap,
+  createDisplayObject,
+  createImageResourceFromBitmap,
+  createSprite,
+  createTexture,
+  loadImageResourceFromUrl,
+} from '@flighthq/sdk';
+
+import { render, scale } from './render';
+
+const SIZE = 32;
+const SPACING = 10;
+const CELL = SIZE + SPACING;
+const HEADER_OFFSET = SIZE + 20;
+
+const root = createDisplayObject();
+root.scaleX = scale;
+root.scaleY = scale;
+
+const sourceNames = [
+  'checkers',
+  'checkers_alpha',
+  'noise1',
+  'noise2',
+  'red_ball',
+  'red_ball_alpha',
+  'red_ball_half_alpha',
+  'yellow_ball',
+  'rectangle',
+  'rectangle2',
+];
+
+const [
+  sourceImages,
+  indicator0,
+  indicatorMinus1,
+  _indicatorMinus2,
+  indicatorMinus3,
+  indicatorMinus4,
+  indicatorNull,
+  indicatorDisposed,
+  indicatorError,
+] = await Promise.all([
+  Promise.all(sourceNames.map((name) => loadImageResourceFromUrl(`/images/${SIZE}/${name}.png`))),
+  loadImageResourceFromUrl(`/images/${SIZE}/0.png`),
+  loadImageResourceFromUrl(`/images/${SIZE}/minus1.png`),
+  loadImageResourceFromUrl(`/images/${SIZE}/minus2.png`),
+  loadImageResourceFromUrl(`/images/${SIZE}/minus3.png`),
+  loadImageResourceFromUrl(`/images/${SIZE}/minus4.png`),
+  loadImageResourceFromUrl(`/images/${SIZE}/null.png`),
+  loadImageResourceFromUrl(`/images/${SIZE}/disposed.png`),
+  loadImageResourceFromUrl(`/images/${SIZE}/error.png`),
+]);
+
+const sourceBitmaps: Bitmap[] = sourceImages.map((image) => captureBitmapFromImageResource(image));
+
+const entries: Image[] = [...sourceImages, indicatorNull, indicatorDisposed];
+const count = entries.length;
+
+function addImage(image: Image, x: number, y: number): void {
+  const sprite = createSprite();
+  sprite.data.texture = createTexture({ source: image });
+  sprite.x = x;
+  sprite.y = y;
+  addNodeChild(root, sprite);
+}
+
+function getBitmap(index: number): Bitmap | null {
+  return index < sourceBitmaps.length ? sourceBitmaps[index] : null;
+}
+
+function getSourceImage(index: number) {
+  return index < sourceImages.length ? sourceImages[index] : null;
+}
+
+for (let col = 0; col < count; col++) {
+  addImage(entries[col], HEADER_OFFSET + col * CELL, 10);
+}
+
+for (let row = 0; row < count; row++) {
+  addImage(entries[row], 10, HEADER_OFFSET + row * CELL);
+}
+
+// OpenFL BitmapData.compare returns:
+//   BitmapData (diff)  when same size and different pixels
+//   0                  when identical
+//  -1                  when other is not a BitmapData (null)
+//  -2                  when other is disposed
+//  -3                  when widths differ
+//  -4                  when heights differ
+for (let row = 0; row < count; row++) {
+  const rowBitmap = getBitmap(row);
+
+  for (let col = 0; col < count; col++) {
+    const x = HEADER_OFFSET + col * CELL;
+    const y = HEADER_OFFSET + row * CELL;
+    const colBitmap = getBitmap(col);
+
+    if (rowBitmap === null && colBitmap === null) {
+      addImage(indicatorError, x, y);
+      continue;
+    }
+
+    if (rowBitmap === null || colBitmap === null) {
+      addImage(indicatorMinus1, x, y);
+      continue;
+    }
+
+    const rowImg = getSourceImage(row)!;
+    const colImg = getSourceImage(col)!;
+
+    if (rowImg.width !== colImg.width) {
+      addImage(indicatorMinus3, x, y);
+      continue;
+    }
+
+    if (rowImg.height !== colImg.height) {
+      addImage(indicatorMinus4, x, y);
+      continue;
+    }
+
+    const diff = compareBitmap(rowBitmap, colBitmap);
+    if (diff === null) {
+      addImage(indicator0, x, y);
+    } else {
+      addImage(createImageResourceFromBitmap(diff), x, y);
+    }
+  }
+}
+
+function enterFrame(): void {
+  render(root);
+  requestAnimationFrame(enterFrame);
+}
+
+enterFrame();
