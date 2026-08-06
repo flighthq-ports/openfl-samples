@@ -20,6 +20,7 @@ import {
   createPhysics2DWorld,
   createRigidBody2D,
   createShape,
+  createSignal,
   invalidateNodeLocalTransform,
   Physics2DMouseJointKind,
   physics2DMouseJointSolver,
@@ -38,6 +39,9 @@ import { container, render, scale } from './render';
 // with it: the bodies keep the same size in metres, so the simulation is the one the source ran and
 // only the picture is larger.
 const PHYSICS_SCALE = 1 / 48;
+// The source's per-frame step, now expressed as a rate rather than a per-frame constant.
+const PHYSICS_STEP_SECONDS = 1 / 30;
+const PHYSICS_STEP_MS = PHYSICS_STEP_SECONDS * 1000;
 const RAD_TO_DEG = 180 / Math.PI;
 
 // b2DebugDraw's palette, so this column reads as the same debug view as the OpenFL one.
@@ -259,12 +263,23 @@ function resetIfLost(view: BodyView): void {
 }
 
 const app = createApplication();
-connectSignal(app.onUpdate, () => {
-  // A constant step, matching the source demo's per-frame World.step(1 / 30). Advancing by the
-  // frame's real delta instead would let the settle sequence differ from one run to the next, and
-  // the capture harness halts on a fixed frame number rather than a fixed elapsed time.
-  stepPhysics2D(world, 1 / 30);
 
+// The source ran on a stage locked to 30 fps and stepped World.step(1 / 30) once per frame, so its
+// step size and its frame rate were the same number by construction. Here the loop runs at whatever
+// the display does, so stepping once per frame would tie the simulation's speed to the refresh rate:
+// slow motion at 30 fps, double speed at 120.
+//
+// The accumulator decouples the two. onFixedUpdate fires however many whole 1/30 s steps the elapsed
+// time has earned — usually 0 or 1 at 60 fps, more after a stall — so the simulation advances at the
+// source's rate in wall-clock terms on any display. The solver still only ever sees the step size it
+// was tuned for, which a variable step would not preserve: stiff joints and the resting contacts
+// behave differently at 1/144 than at 1/30.
+app.onFixedUpdate = createSignal();
+connectSignal(app.onFixedUpdate, () => {
+  stepPhysics2D(world, PHYSICS_STEP_SECONDS);
+});
+
+connectSignal(app.onUpdate, () => {
   for (const view of views) {
     resetIfLost(view);
     place(view);
@@ -273,7 +288,11 @@ connectSignal(app.onUpdate, () => {
   }
 });
 connectSignal(app.onRender, () => render(root));
-startApplicationLoop(app);
+// maxUpdatesPerFrame is the loop's spiral-of-death guard: if a frame is so late that catching up
+// would need more than this many steps, it drops the backlog rather than running ever further
+// behind. The loop already clamps a frame to maxDeltaTime (250 ms) first, and 250 ms is 7.5 steps,
+// so 8 is the smallest cap that never discards time a clamped frame legitimately earned.
+startApplicationLoop(app, { fixedTimeStep: PHYSICS_STEP_MS, maxUpdatesPerFrame: 8 });
 
 // TEMP DEBUG
 (globalThis as unknown as Record<string, unknown>).__dbg = { root, views };
