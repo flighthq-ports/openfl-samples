@@ -2,6 +2,7 @@ import { createScene3D } from '@flighthq/scene3d';
 
 import {
   addNodeChild,
+  createAnisotropicSampler,
   createCamera3D,
   createMesh,
   createPerspectiveProjection,
@@ -30,7 +31,7 @@ function updateVelocity(velocity: number, acceleration: number, max: number): nu
 }
 
 const image = await loadImageResourceFromUrl('images/checkers.png');
-const texture = createTexture({ source: image });
+const texture = createTexture({ source: image, sampler: createAnisotropicSampler(16) });
 const scene = createScene3D();
 const material = createUnlitMaterial({ baseColor: 0xffffffff, baseColorMap: texture });
 material.doubleSided = true;
