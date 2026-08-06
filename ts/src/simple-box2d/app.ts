@@ -34,11 +34,23 @@ import {
 
 import { container, render, scale } from './render';
 
-// The source lays its scene out for a 500x400 stage at 30 pixels per metre. The corpus standard is
-// 800x600, so the layout below is the source's scaled 1.6x to fill it, and the pixels-per-metre scales
-// with it: the bodies keep the same size in metres, so the simulation is the one the source ran and
-// only the picture is larger.
-const PHYSICS_SCALE = 1 / 48;
+// Pixels per metre — the one number that decides whether this reads as gravity or as a moon walk.
+//
+// Gravity below is 9.8 m/s², so a body's *screen* acceleration is 9.8 x PIXELS_PER_METRE. The source
+// laid its scene out at 30 px/m on a 500x400 stage, which this port scaled 1.6x to the corpus-standard
+// 800x600, giving 48 px/m. At that scale the falling crate is 160 px / 48 = 3.3 metres across and the
+// stage is 16.7 m wide: correct gravity applied to objects the size of a small building, which is
+// exactly what low gravity looks like. Big things really do fall slowly relative to their own size.
+//
+// 160 px/m instead makes the crate 1 m, the balls 0.5 m radius, the ground 5 m wide and the stage
+// 5 x 3.75 m — Box2D's recommended range, and the scale the tuning constants below assume. On screen
+// that is 1568 px/s² rather than 480, so the crate crosses its own height in 0.45 s instead of 0.82 s.
+//
+// This is a deliberate departure from the source's simulation: same solver, same gravity, different
+// world scale. The picture is what was wrong, not the physics.
+const PIXELS_PER_METRE = 160;
+const PHYSICS_SCALE = 1 / PIXELS_PER_METRE;
+const GRAVITY_M_PER_S2 = 9.8;
 // The source's per-frame step, now expressed as a rate rather than a per-frame constant.
 const PHYSICS_STEP_SECONDS = 1 / 30;
 const PHYSICS_STEP_MS = PHYSICS_STEP_SECONDS * 1000;
@@ -54,8 +66,11 @@ const LINE_THICKNESS = 1;
 // b2FixtureDef's defaults, except for density. Box2D promotes a zero-mass dynamic body to a mass of 1
 // with no rotational inertia; Flight derives mass strictly from collider area and density and does
 // not promote, so a density of 0 here gives every dynamic body an inverse mass of 0 and nothing falls
-// at all. The OpenFL column sets the same density rather than leaning on Box2D's promotion, which is
-// what keeps a dragged body swinging the same way in both.
+// at all. The OpenFL column sets the same density rather than leaning on Box2D's promotion.
+//
+// Density is per m², so the world scale above changes what a body weighs — the 1 m crate is roughly
+// an eleventh of the mass the 3.3 m one had. Nothing here depends on the absolute figure: the drag
+// force below is expressed per unit mass, and gravity is an acceleration.
 const DENSITY = 1;
 const FRICTION = 0.2;
 const RESTITUTION = 0;
@@ -91,8 +106,10 @@ root.scaleX = scale;
 root.scaleY = scale;
 
 // Gravity is positive-y because the scene keeps the source demo's screen-space axis, where y grows
-// downward. Flight's own default points the other way, for a y-up world.
-const world = createPhysics2DWorld(0, 10.0);
+// downward. Flight's own default points the other way, for a y-up world. The magnitude is earth's
+// rather than Box2D's customary round 10, so that PIXELS_PER_METRE above is the only thing standing
+// between this number and what you see.
+const world = createPhysics2DWorld(0, GRAVITY_M_PER_S2);
 registerPhysics2DJointSolver(world, Physics2DMouseJointKind, physics2DMouseJointSolver);
 
 const views: BodyView[] = [];
@@ -293,6 +310,3 @@ connectSignal(app.onRender, () => render(root));
 // behind. The loop already clamps a frame to maxDeltaTime (250 ms) first, and 250 ms is 7.5 steps,
 // so 8 is the smallest cap that never discards time a clamped frame legitimately earned.
 startApplicationLoop(app, { fixedTimeStep: PHYSICS_STEP_MS, maxUpdatesPerFrame: 8 });
-
-// TEMP DEBUG
-(globalThis as unknown as Record<string, unknown>).__dbg = { root, views };
