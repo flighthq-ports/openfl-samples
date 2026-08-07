@@ -151,8 +151,9 @@ background clear still paints, which looks like a working app that renders nothi
 
 | state | samples |
 | --- | --- |
-| ported; builds on all four targets and runs clean under `smoke.sh` | `AddingText`, `CreatingAMainLoop`, `DisplayingABitmap`, `DrawingShapes`, `TicTacToe` |
-| scaffolded (`project.xml` + `LimeCanvas.hx`), `Main.hx` not yet written | the other 21 |
+| ported; builds on all four targets and runs clean under `smoke.sh` | `ActuateExample`, `AddingAnimation`, `AddingText`, `CreatingAMainLoop`, `DisplayingABitmap`, `DrawingShapes`, `HandlingKeyboardEvents`, `HandlingMouseEvents`, `TicTacToe`, `WorldClock` |
+| ported and compiling, but faulting at runtime | `AnimatedTilemap` — `Invalid operation (+)` while building the spritesheet; `smoke.sh` reports it |
+| scaffolded (`project.xml`, `LimeCanvas.hx`, the four `Render*.hx`), `Main.hx` not yet written | the other 15 |
 
 Every project directory exists with its window size, background and assets already wired from the
 matching `ts/src/<sample>/render.webgl.ts`, so an outstanding sample is a `Main.hx` away. `build.sh`
