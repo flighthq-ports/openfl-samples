@@ -7,4 +7,8 @@
   <haxelib name="lime" />
   <haxelib name="flight" />
   <!-- <haxeflag name="-dce" value="full" /> -->
+  <!-- The shared corpus at repo-root assets/, mounted under the same relative ids ts/ uses. -->
+  <assets path="../../assets/img" rename="img" include="*.png" embed="true" />
+  <assets path="../../assets/fonts" rename="fonts" include="LiberationSerif-Regular.ttf" embed="true" />
+  <assets path="../../assets/fonts" rename="fonts" include="nokiafc22.ttf" embed="true" />
 </project>
