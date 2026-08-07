@@ -8,7 +8,10 @@ import LimeCanvas.LimeAssets;
 import flighthq.app.App;
 import flighthq.hostLime.LimeApp;
 import flighthq.sdk.Sdk.*;
+import flighthq.types.Spritesheet;
+import flighthq.types.SpritesheetFrame;
 import flighthq.types.Sprite;
+import flighthq.types.TextureAtlas;
 import lime.app.Application;
 import lime.graphics.RenderContext;
 
@@ -33,8 +36,10 @@ class Main extends Application {
   var ready = false;
 
   var root:Sprite;
-  var atlas:Dynamic;
-  var sheet:Dynamic;
+  // Typed rather than Dynamic: these are real typedefs in the generated port, and going through
+  // Dynamic field access instead makes `regions.length` / `frames.push` runtime lookups.
+  var atlas:TextureAtlas;
+  var sheet:Spritesheet;
   var sprites:Array<Sprite> = [];
   var players:Array<Dynamic> = [];
   var app:Dynamic;
@@ -75,9 +80,9 @@ class Main extends Application {
     for (def in ANIMATIONS) {
       final frameIndices:Array<Int> = [];
       for (col in 0...4) {
-        final atlasId:Int = atlas.regions.length;
+        final atlasId = atlas.regions.length;
         addTextureAtlasRegion(atlas, col * TILE_SIZE, def.row * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-        final frameIndex:Int = sheet.frames.length;
+        final frameIndex = sheet.frames.length;
         sheet.frames.push(createSpritesheetFrame({id: atlasId}));
         frameIndices.push(frameIndex);
       }

@@ -152,12 +152,21 @@ background clear still paints, which looks like a working app that renders nothi
 | state | samples |
 | --- | --- |
 | ported; builds on all four targets and runs clean under `smoke.sh` | `ActuateExample`, `AddingAnimation`, `AddingText`, `CreatingAMainLoop`, `DisplayingABitmap`, `DrawingShapes`, `HandlingKeyboardEvents`, `HandlingMouseEvents`, `TicTacToe`, `WorldClock` |
-| ported and compiling, but faulting at runtime | `AnimatedTilemap` — `Invalid operation (+)` while building the spritesheet; `smoke.sh` reports it |
-| scaffolded (`project.xml`, `LimeCanvas.hx`, the four `Render*.hx`), `Main.hx` not yet written | the other 15 |
+| ported and compiling, but faulting at runtime | `AnimatedTilemap`, `SimpleBox2D` — see below; `smoke.sh` reports both |
+| scaffolded (`project.xml`, `LimeCanvas.hx`, the four `Render*.hx`), `Main.hx` not yet written | the other 14 |
 
 Every project directory exists with its window size, background and assets already wired from the
 matching `ts/src/<sample>/render.webgl.ts`, so an outstanding sample is a `Main.hx` away. `build.sh`
 prints `-` for a project that has not been ported yet, rather than counting it as a failure.
+
+The two runtime failures are worth separating, because only one of them is a porting problem:
+
+- **`SimpleBox2D`** is blocked upstream, not here. `flighthq._internal._Runtime` shims the JavaScript
+  `Number` global with `isNaN`/`parseInt`/`isFinite`/`isInteger`/`parseFloat`, and the physics code
+  calls `Number.isSafeInteger`, which the shim does not implement:
+  `_Runtime.callProperty: ... has no method isSafeInteger`. Nothing in the sample can work around it.
+- **`AnimatedTilemap`** faults with `Invalid operation (+)` while building the spritesheet, at the
+  `sheet.frames.push(createSpritesheetFrame(...))` call. Left for a newer flight-hx.
 
 Ones to expect trouble on, and why: `PlayingVideo` and `UsingBitmapData` lean on browser video and
 Canvas-2D painting (flight-hx's convention is a minimal in-file stub that keeps the SDK call sites
