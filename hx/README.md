@@ -152,9 +152,9 @@ background clear still paints, which looks like a working app that renders nothi
 | state | samples |
 | --- | --- |
 | ported; builds and runs clean under `smoke.sh` | `ActuateExample`, `AddingAnimation`, `AddingText`, `AnimatedTilemap`, `CompareBitmapData`, `CreatingAMainLoop`, `DisplayingABitmap`, `DrawingShapes`, `GLSLBitmap`, `HandlingKeyboardEvents`, `HandlingMouseEvents`, `Stage3DMipmap`, `TextAlignment`, `TextMetrics`, `TicTacToe`, `WorldClock` |
-| ported and compiling, but faulting at runtime | `Bunnymark`, `HelloTriangle`, `NyanCat`, `PlayingSound`, `SimpleBox2D`, `Stage3DCamera`, `UsingBitmapData`, `UsingSwfAssets` — see below |
+| ported and compiling, but faulting at runtime | `Bunnymark`, `HelloTriangle`, `NyanCat`, `PlayingSound`, `PiratePig`, `SimpleBox2D`, `Stage3DCamera`, `UsingBitmapData`, `UsingSwfAssets` — see below |
 | ported, but its clean `smoke.sh` run proves nothing | `PlayingVideo` — see below |
-| not yet ported | `PiratePig` — 933 lines across `app.ts`, `game.ts` and `tile.ts`; needs its own pass |
+
 
 Every project directory exists with its window size, background and assets already wired from the
 matching `ts/src/<sample>/render.webgl.ts`, so an outstanding sample is a `Main.hx` away. `build.sh`
@@ -170,6 +170,7 @@ what they fault on is a straight report of what the generated Haxe port cannot y
 | `UsingSwfAssets` | `Layout symbol is missing Background` | `createScene2DSymbolFromSwf` returns a document, but `findNodeByName` finds none of its named children |
 | `NyanCat` | `SWF is missing its animated clip` | `createScene2DFromSwf` returns a document whose root has no children |
 | `PlayingSound` | `Runtime: cannot construct a JavaScript global that has no portable implementation on this target` | `new AudioContext()`, which `loadAudioResourceFromUrls` / `playAudioResource` need |
+| `PiratePig` | same as `PlayingSound` | the game needs an `AudioContext` for its theme and match sounds before anything else runs |
 | `Stage3DCamera` | `Invalid call` | see the one-variable reproducer below |
 | `Bunnymark` | `Unsupported operation` | `createQuadBatch` / `resizeQuadBatch` and the `data.transforms` write path |
 | `UsingBitmapData` | `Invalid field access : width` | one of the bitmap ops, before it reaches the canvas step below |
@@ -183,6 +184,11 @@ window. Treat it as untested until something actually renders a frame of video.
 `document.createElement('canvas')` → `getContext('2d')` → `createBitmapFromCanvas`, because there is
 no Flight entry point that composites from a bitmap source. It is wired to the same API `ts/` uses
 rather than stubbed, so it will fault on that step outside a browser.
+
+`PiratePig` also leaves one thing unported: `ts/`'s `render.webgl.ts` bakes the score panel's blur
+into an offscreen pass (`createBlurEffect` → `computeRenderEffectPadding` → a cached render target
+re-baked on resize). The panel draws unfiltered here and the refresh hook is a no-op, the same way
+`ts/`'s own DOM backend stubs it.
 
 `TextMetrics` carries a placeholder `TextMeasureFunction` — a flat half-em advance — because `ts/`
 measures through an offscreen 2D canvas and nothing portable replaces that. The layout runs, but the
