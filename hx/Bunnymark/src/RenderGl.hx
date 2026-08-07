@@ -3,7 +3,7 @@ package;
 
 import LimeCanvas.GlCanvas;
 import flighthq.sdk.Sdk.*;
-import flighthq.types.DisplayObject;
+import flighthq.types.QuadBatch;
 import lime.ui.Window;
 
 class RenderGl {
@@ -24,7 +24,7 @@ class RenderGl {
 
   // ts/ returns void here; this returns whether anything was drawn, so the caller can cancel Lime's
   // present on a skipped frame instead of flipping to a never-drawn back buffer.
-  public static function render(root:DisplayObject):Bool {
+  public static function render(root:QuadBatch):Bool {
     if (!prepareScene2DRender(state, root)) return false;
     renderGlBackground(state);
     renderGlScene2D(state, root);
