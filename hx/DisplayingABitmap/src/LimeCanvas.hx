@@ -99,6 +99,7 @@ class LimeAssets {
   // path (source stays null) is what the GL renderer's 9-argument texImage2D overload wants; handing
   // it a bare {width, height} object instead lands on the DOM-element overload and is rejected.
   public static function image(id:String):Dynamic {
+    lime.utils.Assets.list();
     final source = lime.utils.Assets.getImage(id);
     if (source == null) throw 'Missing asset: ' + id;
     return fromLimeImage(source);
