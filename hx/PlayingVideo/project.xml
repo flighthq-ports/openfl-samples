@@ -7,4 +7,5 @@
   <haxelib name="lime" />
   <haxelib name="flight" />
   <!-- <haxeflag name="-dce" value="full" /> -->
+  <assets path="../../assets/videos" rename="videos" include="example.mp4" embed="true" />
 </project>

@@ -151,9 +151,9 @@ background clear still paints, which looks like a working app that renders nothi
 
 | state | samples |
 | --- | --- |
-| ported; builds and runs clean under `smoke.sh` | `ActuateExample`, `AddingAnimation`, `AddingText`, `AnimatedTilemap`, `CreatingAMainLoop`, `DisplayingABitmap`, `DrawingShapes`, `GLSLBitmap`, `HandlingKeyboardEvents`, `HandlingMouseEvents`, `TicTacToe`, `WorldClock` |
-| ported and compiling, but faulting at runtime | `HelloTriangle`, `NyanCat`, `SimpleBox2D`, `UsingSwfAssets` — see below; `smoke.sh` reports all four |
-| scaffolded (`project.xml`, `LimeCanvas.hx`, the four `Render*.hx`), `Main.hx` not yet written | the other 10 |
+| ported; builds and runs clean under `smoke.sh` | `ActuateExample`, `AddingAnimation`, `AddingText`, `AnimatedTilemap`, `Bunnymark`, `CompareBitmapData`, `CreatingAMainLoop`, `DisplayingABitmap`, `DrawingShapes`, `GLSLBitmap`, `HandlingKeyboardEvents`, `HandlingMouseEvents`, `Stage3DCamera`, `Stage3DMipmap`, `TextAlignment`, `TextMetrics`, `TicTacToe`, `UsingBitmapData`, `WorldClock` — subject to the `smoke.sh` run below |
+| ported and compiling, but faulting at runtime | `HelloTriangle`, `NyanCat`, `PlayingSound`, `PlayingVideo`, `SimpleBox2D`, `UsingSwfAssets` — see below |
+| not yet ported | `PiratePig` — 933 lines across `app.ts`, `game.ts` and `tile.ts`; needs its own pass |
 
 Every project directory exists with its window size, background and assets already wired from the
 matching `ts/src/<sample>/render.webgl.ts`, so an outstanding sample is a `Main.hx` away. `build.sh`
@@ -168,8 +168,19 @@ what they fault on is a straight report of what the generated Haxe port cannot y
 | `HelloTriangle` | `Invalid call` | Scene3D: `createMeshGeometry` / `createVertexColorMaterial` / `createMesh`, drawn via `createGlRenderEffectPipeline` → `drawGlScene3D` |
 | `UsingSwfAssets` | `Layout symbol is missing Background` | `createScene2DSymbolFromSwf` returns a document, but `findNodeByName` finds none of its named children |
 | `NyanCat` | `SWF is missing its animated clip` | `createScene2DFromSwf` returns a document whose root has no children |
+| `PlayingSound` | `Runtime: cannot construct a JavaScript global that has no portable implementation on this target` | `new AudioContext()`, which `loadAudioResourceFromUrls` / `playAudioResource` need |
+| `PlayingVideo` | same class as above | `loadVideoResourceFromUrl` / `createVideoTexture` are backed by an HTML `<video>` element |
 
-The last two corroborate each other: two different SWF entry points, two different files, both decode
+`UsingBitmapData` is worth a look too: it runs, but its "drawn" tile still goes through
+`document.createElement('canvas')` → `getContext('2d')` → `createBitmapFromCanvas`, because there is
+no Flight entry point that composites from a bitmap source. It is wired to the same API `ts/` uses
+rather than stubbed, so it will fault on that step outside a browser.
+
+`TextMetrics` carries a placeholder `TextMeasureFunction` — a flat half-em advance — because `ts/`
+measures through an offscreen 2D canvas and nothing portable replaces that. The layout runs, but the
+metric numbers it reports are not real.
+
+The SWF pair corroborate each other: two different SWF entry points, two different files, both decode
 without raising and both yield an empty scene, so SWF parsing looks incomplete rather than misused.
 
 Note on stale builds: changing an `<assets>` entry does not always cause Lime to re-embed on an
