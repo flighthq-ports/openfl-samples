@@ -7,4 +7,5 @@
   <haxelib name="lime" />
   <haxelib name="flight" />
   <!-- <haxeflag name="-dce" value="full" /> -->
+  <assets path="../../assets/sounds" rename="sounds" include="stars.ogg" embed="true" />
 </project>
