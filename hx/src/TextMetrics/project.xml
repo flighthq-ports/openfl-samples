@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+  <meta title="Text Metrics" package="hq.flight.samples.textmetrics" version="0.1.0" />
+  <app main="Main" file="TextMetrics" />
+  <window width="800" height="600" fps="60" background="0xa0a0a0" hardware="true" vsync="true" />
+  <window hardware="false" if="cairo" />
+  <source path="Source" />
+  <include path="${haxelib:flight}" />
+  <haxelib name="lime" />
+  <haxeflag name="-dce" value="full" />
+</project>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+  <meta title="Actuate Example" package="hq.flight.samples.actuateexample" version="0.1.0" />
+  <app main="Main" file="ActuateExample" />
+  <window width="800" height="600" fps="60" background="0xffffff" hardware="true" vsync="true" />
+  <window hardware="false" if="cairo" />
+  <source path="Source" />
+  <include path="${haxelib:flight}" />
+  <haxelib name="lime" />
+  <haxeflag name="-dce" value="full" />
+</project>

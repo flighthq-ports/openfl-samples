@@ -10,3 +10,6 @@ ts/src/thumbs/
 ts/src/sizes.json
 
 .quimby
+
+# Lime build output for the Haxe sample projects
+hx/src/*/bin/

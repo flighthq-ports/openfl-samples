@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+  <meta title="Displaying a Bitmap" package="hq.flight.samples.displayingabitmap" version="0.1.0" />
+  <app main="Main" file="DisplayingABitmap" />
+  <window width="800" height="600" fps="60" background="0xffffff" hardware="true" vsync="true" />
+  <window hardware="false" if="cairo" />
+  <source path="Source" />
+  <include path="${haxelib:flight}" />
+  <haxelib name="lime" />
+  <haxeflag name="-dce" value="full" />
+  <!-- The shared corpus at repo-root assets/, mounted under the same relative ids ts/ uses. -->
+  <assets path="../../../assets/images" rename="images" include="openfl_icon_large.png" />
+</project>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+  <meta title="Adding Text" package="hq.flight.samples.addingtext" version="0.1.0" />
+  <app main="Main" file="AddingText" />
+  <window width="800" height="600" fps="60" background="0xffffff" hardware="true" vsync="true" />
+  <window hardware="false" if="cairo" />
+  <source path="Source" />
+  <include path="${haxelib:flight}" />
+  <haxelib name="lime" />
+  <haxeflag name="-dce" value="full" />
+  <assets path="../../../assets/fonts" rename="fonts" include="KatamotzIkasi.ttf" />
+</project>
