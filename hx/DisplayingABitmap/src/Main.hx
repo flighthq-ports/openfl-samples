@@ -7,6 +7,10 @@
 // and read through `lime.utils.Assets`, then handed to Flight as an ImageResource built from raw RGBA
 // bytes — the same `createImageResourceFromBitmap` path flight-hx's own examples use. Every Flight call
 // site downstream is unchanged.
+//
+// The scene is built in onPreloadComplete rather than onWindowCreate. Lime loads assets
+// asynchronously on html5 and only guarantees them once preloading finishes; onWindowCreate runs
+// before that, so reading the image there works on neko (synchronous loads) and throws in a browser.
 import LimeCanvas.LimeAssets;
 import flighthq.app.App;
 import flighthq.hostLime.LimeApp;
@@ -17,7 +21,9 @@ import lime.graphics.RenderContext;
 
 class Main extends Application {
   var scale:Float = 1.0;
-  var renderer:Renderer;
+  // Bound once to the chosen backend's render function, the way ts/ has render.ts re-export exactly
+  // one render.<backend>.ts. Lime chooses for us, so the pick is a switch on the context type.
+  var drawFrame:DisplayObject->Bool;
   var ready = false;
 
   var main:DisplayObject;
@@ -28,10 +34,31 @@ class Main extends Application {
 
   override public function onWindowCreate():Void {
     App.setAppBackend(LimeApp.createLimeAppBackend(this));
-    renderer = new Renderer(window, 0xffffffff);
-    renderer.useSprites();
-    scale = renderer.scale;
+    switch (window.context.type) {
+      case DOM:
+        RenderDom.init(window);
+        scale = RenderDom.scale;
+        drawFrame = RenderDom.render;
+      case CANVAS:
+        RenderCanvas.init(window);
+        scale = RenderCanvas.scale;
+        drawFrame = RenderCanvas.render;
+      case CAIRO:
+        RenderCairo.init(window);
+        scale = RenderCairo.scale;
+        drawFrame = RenderCairo.render;
+      case OPENGL, OPENGLES, WEBGL:
+        RenderGl.init(window);
+        scale = RenderGl.scale;
+        drawFrame = RenderGl.render;
+      default:
+        throw 'Unsupported Lime render context: ' + window.context.type;
+    }
 
+  }
+
+  // Assets are guaranteed here, not in onWindowCreate.
+  override public function onPreloadComplete():Void {
     main = createDisplayObject();
     main.scaleX = scale;
     main.scaleY = scale;
@@ -53,10 +80,8 @@ class Main extends Application {
 
   override public function render(context:RenderContext):Void {
     if (!ready || main == null) return;
-    if (!renderer.prepare(main)) {
-      window.onRender.cancel();
-      return;
-    }
-    renderer.draw(main);
+    // Nothing changed since the last frame: skip the draw and cancel the present, so Lime does not
+    // flip to a never-drawn back buffer.
+    if (!drawFrame(main)) window.onRender.cancel();
   }
 }

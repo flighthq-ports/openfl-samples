@@ -17,8 +17,11 @@ hx/
   smoke.sh                     run each built neko app briefly, fail on an uncaught exception
   DrawingShapes/
     project.xml                standalone Lime app, own <assets> lines
-    src/Main.hx                the port of ts/src/drawing-shapes
-    src/Renderer.hx            picks the Flight backend from the Lime context type
+    src/Main.hx                the port of ts/src/drawing-shapes/app.ts
+    src/RenderGl.hx            ...of render.webgl.ts
+    src/RenderCanvas.hx        ...of render.canvas.ts
+    src/RenderDom.hx           ...of render.dom.ts
+    src/RenderCairo.hx         Lime's native software context
     src/LimeCanvas.hx          Lime->Flight surface adapters and asset loader
 ```
 
@@ -76,8 +79,9 @@ the host glue, and it differs the same way every time:
 
 | `ts/` | here |
 | --- | --- |
-| `render.<backend>.ts` builds the render state over a `<canvas>` | `new Renderer(window, background)` in `onWindowCreate` |
-| that module registers the kinds the sample draws | `renderer.useShapes()` / `useSprites()` / `useTextLabels()` / `useRichText()` |
+| `render.<backend>.ts` builds the render state over a `<canvas>` | `RenderGl` / `RenderCanvas` / `RenderDom` / `RenderCairo`, one file each |
+| `render.ts` re-exports exactly one of them | a `switch (window.context.type)` in `onWindowCreate` binds one `render` function |
+| top-level `await loadImageResourceFromUrl(...)` before the scene is built | scene built in `onPreloadComplete` |
 | `requestAnimationFrame` loop | Lime's `update(deltaTime)`, stepping the Flight app with `stepApplicationLoop` |
 | `render(root)` | Lime's `render(context)` override |
 | `attachPointerInput(input, container)` | Lime's `onMouseDown` / `onMouseMove` / `onMouseUp` |
@@ -87,30 +91,40 @@ the host glue, and it differs the same way every time:
 
 ### Picking a backend
 
-`Renderer` switches on `window.context.type`, which is Lime's own convention, and builds the matching
-Flight render state — `createDomRenderState`, `createCanvasRenderState` or `createGlRenderState`.
-Lime decides the context from the build: `-Ddom` and `-Dcanvas` on html5, otherwise WebGL; on neko,
-OpenGL, or Cairo when the window asks for `hardware="false"`.
-
-A sample never names a backend. It says which *kinds* it draws:
+One file per render target, mirroring `ts/`'s `render.<backend>.ts`. Each holds only the calls that
+sample makes — its own `create*RenderState`, its own registrations, its own `render`. Nothing is
+shared or generalised between them, so a file reads as the whole story for that target:
 
 ```haxe
-renderer = new Renderer(window, 0xffffffff);
-renderer.useShapes();
-renderer.useTextLabels();
+class RenderGl {
+  public static function init(window:Window):Void {
+    state = createGlRenderState(new GlCanvas(window), { ... });
+    registerRenderer(state, ShapeKind, defaultGlShapeRenderer);
+    registerGlShapeCommands(state, defaultGlShapeCommands);
+    ...
+  }
+}
 ```
 
-Each `use*` expands to that backend's registration set — including the parts that are easy to forget,
-like the shape rasterizer the DOM and GL backends both need for vector fills but the Canvas backend
-does not. Registering only the kinds a sample draws is deliberate: it is the same explicit opt-in
-`ts/` relies on to let the bundler drop everything else.
+`ts/` picks one at build time by having `render.ts` re-export a single module. Lime picks at runtime
+from the context it created, so `Main.hx` switches on `window.context.type` once in `onWindowCreate`
+and binds one `render` function for the rest of the run. Bodies that only make sense on one platform
+are `#if`-guarded — `RenderDom` and `RenderCanvas` behind `js`, `RenderCairo` behind
+`(lime && !js && lime_cairo)` — so a neko build never drags the DOM backend in behind a branch it
+cannot take.
 
-**Cairo is its own branch**, even though it currently drives the same Flight canvas entry points as
-`CANVAS`, because cairo-specific entry points are being commissioned upstream. When they land, only
-the `CAIRO` case and the draw switch change. Nothing selects it today — the template has no
-`hardware="false"` window — so the branch compiles but is not exercised.
+**Cairo is its own file**, even though it currently calls the same Flight entry points as
+`RenderCanvas`, because cairo-specific entry points are being commissioned upstream. When they land,
+only `RenderCairo.hx` changes. Nothing selects it today — the project template has no
+`hardware="false"` window — so it compiles but is not exercised.
 
-### Three traps worth knowing
+### Four traps worth knowing
+
+**Build the scene in `onPreloadComplete`, not `onWindowCreate`.** Lime preloads assets
+asynchronously and only guarantees them once preloading finishes; `onWindowCreate` runs before that.
+Reading an asset there works on neko, where loads are synchronous, and comes back null in a browser —
+so the sample runs fine natively and throws on html5. Build the render state in `onWindowCreate`
+(it needs the window) and everything that touches an asset in `onPreloadComplete`.
 
 **Assets must be `embed="true"`.** Without it the project builds clean and then dies on the first
 frame with `[lime.utils.Assets] ERROR: There is no asset library named "default", or it is not yet

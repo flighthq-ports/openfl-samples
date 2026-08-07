@@ -14,7 +14,9 @@ import lime.graphics.RenderContext;
 
 class Main extends Application {
   var scale:Float = 1.0;
-  var renderer:Renderer;
+  // Bound once to the chosen backend's render function, the way ts/ has render.ts re-export exactly
+  // one render.<backend>.ts. Lime chooses for us, so the pick is a switch on the context type.
+  var drawFrame:DisplayObject->Bool;
   var ready = false;
 
   var root:DisplayObject;
@@ -28,9 +30,26 @@ class Main extends Application {
 
   override public function onWindowCreate():Void {
     App.setAppBackend(LimeApp.createLimeAppBackend(this));
-    renderer = new Renderer(window, 0xffffffff);
-    renderer.useShapes();
-    scale = renderer.scale;
+    switch (window.context.type) {
+      case DOM:
+        RenderDom.init(window);
+        scale = RenderDom.scale;
+        drawFrame = RenderDom.render;
+      case CANVAS:
+        RenderCanvas.init(window);
+        scale = RenderCanvas.scale;
+        drawFrame = RenderCanvas.render;
+      case CAIRO:
+        RenderCairo.init(window);
+        scale = RenderCairo.scale;
+        drawFrame = RenderCairo.render;
+      case OPENGL, OPENGLES, WEBGL:
+        RenderGl.init(window);
+        scale = RenderGl.scale;
+        drawFrame = RenderGl.render;
+      default:
+        throw 'Unsupported Lime render context: ' + window.context.type;
+    }
 
     root = createDisplayObject();
     root.scaleX = scale;
@@ -59,10 +78,8 @@ class Main extends Application {
 
   override public function render(context:RenderContext):Void {
     if (!ready || root == null) return;
-    if (!renderer.prepare(root)) {
-      window.onRender.cancel();
-      return;
-    }
-    renderer.draw(root);
+    // Nothing changed since the last frame: skip the draw and cancel the present, so Lime does not
+    // flip to a never-drawn back buffer.
+    if (!drawFrame(root)) window.onRender.cancel();
   }
 }
