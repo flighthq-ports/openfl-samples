@@ -151,8 +151,9 @@ background clear still paints, which looks like a working app that renders nothi
 
 | state | samples |
 | --- | --- |
-| ported; builds and runs clean under `smoke.sh` | `ActuateExample`, `AddingAnimation`, `AddingText`, `AnimatedTilemap`, `Bunnymark`, `CompareBitmapData`, `CreatingAMainLoop`, `DisplayingABitmap`, `DrawingShapes`, `GLSLBitmap`, `HandlingKeyboardEvents`, `HandlingMouseEvents`, `Stage3DCamera`, `Stage3DMipmap`, `TextAlignment`, `TextMetrics`, `TicTacToe`, `UsingBitmapData`, `WorldClock` — subject to the `smoke.sh` run below |
-| ported and compiling, but faulting at runtime | `HelloTriangle`, `NyanCat`, `PlayingSound`, `PlayingVideo`, `SimpleBox2D`, `UsingSwfAssets` — see below |
+| ported; builds and runs clean under `smoke.sh` | `ActuateExample`, `AddingAnimation`, `AddingText`, `AnimatedTilemap`, `CompareBitmapData`, `CreatingAMainLoop`, `DisplayingABitmap`, `DrawingShapes`, `GLSLBitmap`, `HandlingKeyboardEvents`, `HandlingMouseEvents`, `Stage3DCamera`, `Stage3DMipmap`, `TextAlignment`, `TextMetrics`, `TicTacToe`, `WorldClock` |
+| ported and compiling, but faulting at runtime | `Bunnymark`, `HelloTriangle`, `NyanCat`, `PlayingSound`, `SimpleBox2D`, `UsingBitmapData`, `UsingSwfAssets` — see below |
+| ported, but its clean `smoke.sh` run proves nothing | `PlayingVideo` — see below |
 | not yet ported | `PiratePig` — 933 lines across `app.ts`, `game.ts` and `tile.ts`; needs its own pass |
 
 Every project directory exists with its window size, background and assets already wired from the
@@ -169,9 +170,15 @@ what they fault on is a straight report of what the generated Haxe port cannot y
 | `UsingSwfAssets` | `Layout symbol is missing Background` | `createScene2DSymbolFromSwf` returns a document, but `findNodeByName` finds none of its named children |
 | `NyanCat` | `SWF is missing its animated clip` | `createScene2DFromSwf` returns a document whose root has no children |
 | `PlayingSound` | `Runtime: cannot construct a JavaScript global that has no portable implementation on this target` | `new AudioContext()`, which `loadAudioResourceFromUrls` / `playAudioResource` need |
-| `PlayingVideo` | same class as above | `loadVideoResourceFromUrl` / `createVideoTexture` are backed by an HTML `<video>` element |
+| `Bunnymark` | `Unsupported operation` | `createQuadBatch` / `resizeQuadBatch` and the `data.transforms` write path |
+| `UsingBitmapData` | `Invalid field access : width` | one of the bitmap ops, before it reaches the canvas step below |
 
-`UsingBitmapData` is worth a look too: it runs, but its "drawn" tile still goes through
+**`PlayingVideo` passes `smoke.sh` and that is not evidence it works.** It loads through
+`loadVideoResourceFromUrl(...).then(...)` with a rejection handler that swallows, exactly as `ts/`
+writes it — so if the load fails, `ready` stays false and the app idles quietly for the whole smoke
+window. Treat it as untested until something actually renders a frame of video.
+
+`UsingBitmapData` faults before it gets there, but its "drawn" tile also goes through
 `document.createElement('canvas')` → `getContext('2d')` → `createBitmapFromCanvas`, because there is
 no Flight entry point that composites from a bitmap source. It is wired to the same API `ts/` uses
 rather than stubbed, so it will fault on that step outside a browser.
