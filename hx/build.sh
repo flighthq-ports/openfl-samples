@@ -6,7 +6,7 @@
 #   ./build.sh neko DrawingShapes AddingText   # one target, named projects only
 #
 # Requires: haxe, neko, and `haxelib run lime` (lime 8.x), with `haxelib dev flight <flight-hx>`
-# already pointing at a flight-hx checkout.
+# already pointing at a flight-hx checkout (project.xml pulls it in as `<haxelib name="flight" />`).
 set -uo pipefail
 
 cd "$(dirname "$0")"
@@ -22,11 +22,11 @@ esac
 if [ "$#" -gt 0 ]; then
   projects=("$@")
 else
-  mapfile -t projects < <(cd src && ls -d */ 2>/dev/null | sed 's#/##' | sort)
+  mapfile -t projects < <(for d in */; do [ -f "$d/project.xml" ] && echo "${d%/}"; done | sort)
 fi
 
 if [ "${#projects[@]}" -eq 0 ]; then
-  echo "no projects under hx/src"
+  echo "no projects under hx/"
   exit 0
 fi
 
@@ -38,19 +38,19 @@ printf '\n'
 for p in "${projects[@]}"; do
   printf '%-26s' "$p"
   for t in "${targets[@]}"; do
-    if [ ! -f "src/$p/project.xml" ]; then
+    if [ ! -f "$p/project.xml" ]; then
       printf '%-10s' 'no-proj'
       fail=1
       continue
     fi
     # Scaffolded but not ported yet: report distinctly rather than as a compile failure.
-    if [ ! -f "src/$p/Source/Main.hx" ]; then
+    if [ ! -f "$p/src/Main.hx" ]; then
       printf '%-10s' '-'
       continue
     fi
-    log="src/$p/bin/build-$t.log"
-    mkdir -p "src/$p/bin"
-    if (cd "src/$p" && haxelib run lime build "$t") >"$log" 2>&1; then
+    log="$p/bin/build-$t.log"
+    mkdir -p "$p/bin"
+    if (cd "$p" && haxelib run lime build "$t") >"$log" 2>&1; then
       printf '%-10s' 'ok'
     else
       printf '%-10s' 'FAIL'
@@ -62,6 +62,6 @@ done
 
 if [ "$fail" -ne 0 ]; then
   echo
-  echo "failures above; per-project logs at hx/src/<project>/bin/build-<target>.log"
+  echo "failures above; per-project logs at hx/<project>/bin/build-<target>.log"
 fi
 exit "$fail"

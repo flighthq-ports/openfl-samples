@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
-  <meta title="World Clock" package="hq.flight.samples.worldclock" version="0.1.0" />
+  <meta title="World Clock" package="flighthq_ports.openfl.samples.worldclock" version="0.1.0" />
   <app main="Main" file="WorldClock" />
-  <window width="370" height="140" fps="60" background="0xffffff" hardware="true" vsync="true" />
-  <window hardware="false" if="cairo" />
-  <source path="Source" />
-  <include path="${haxelib:flight}" />
+  <window width="370" height="140" fps="60" background="0xffffff" />
+  <source path="src" />
   <haxelib name="lime" />
-  <haxeflag name="-dce" value="full" />
+  <haxelib name="flight" />
+  <!-- <haxeflag name="-dce" value="full" /> -->
 </project>

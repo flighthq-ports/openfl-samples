@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
-  <meta title="Animated Tilemap" package="hq.flight.samples.animatedtilemap" version="0.1.0" />
+  <meta title="Animated Tilemap" package="flighthq_ports.openfl.samples.animatedtilemap" version="0.1.0" />
   <app main="Main" file="AnimatedTilemap" />
-  <window width="800" height="600" fps="60" background="0xffffff" hardware="true" vsync="true" />
-  <window hardware="false" if="cairo" />
-  <source path="Source" />
-  <include path="${haxelib:flight}" />
+  <window width="800" height="600" fps="60" background="0xffffff" />
+  <source path="src" />
   <haxelib name="lime" />
-  <haxeflag name="-dce" value="full" />
-  <assets path="../../../assets/images" rename="images" include="tiles.png" />
+  <haxelib name="flight" />
+  <!-- <haxeflag name="-dce" value="full" /> -->
+  <!-- The shared corpus at repo-root assets/, mounted under the same relative ids ts/ uses. -->
+  <assets path="../../assets/images" rename="images" include="tiles.png" embed="true" />
 </project>

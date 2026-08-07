@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
-  <meta title="Using SWF Assets" package="hq.flight.samples.usingswfassets" version="0.1.0" />
+  <meta title="Using SWF Assets" package="flighthq_ports.openfl.samples.usingswfassets" version="0.1.0" />
   <app main="Main" file="UsingSwfAssets" />
-  <window width="800" height="600" fps="60" background="0xffffff" hardware="true" vsync="true" />
-  <window hardware="false" if="cairo" />
-  <source path="Source" />
-  <include path="${haxelib:flight}" />
+  <window width="800" height="600" fps="60" background="0xffffff" />
+  <source path="src" />
   <haxelib name="lime" />
-  <haxeflag name="-dce" value="full" />
-  <assets path="../../../assets/swf" rename="swf" include="*.swf" />
+  <haxelib name="flight" />
+  <!-- <haxeflag name="-dce" value="full" /> -->
+  <!-- The shared corpus at repo-root assets/, mounted under the same relative ids ts/ uses. -->
+  <assets path="../../assets/swf" rename="swf" include="*.swf" embed="true" />
 </project>

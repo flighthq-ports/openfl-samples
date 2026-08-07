@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
-  <meta title="Tic Tac Toe" package="hq.flight.samples.tictactoe" version="0.1.0" />
+  <meta title="Tic Tac Toe" package="flighthq_ports.openfl.samples.tictactoe" version="0.1.0" />
   <app main="Main" file="TicTacToe" />
-  <window width="170" height="170" fps="60" background="0xffffff" hardware="true" vsync="true" />
-  <window hardware="false" if="cairo" />
-  <source path="Source" />
-  <include path="${haxelib:flight}" />
+  <window width="170" height="170" fps="60" background="0xffffff" />
+  <source path="src" />
   <haxelib name="lime" />
-  <haxeflag name="-dce" value="full" />
+  <haxelib name="flight" />
+  <!-- <haxeflag name="-dce" value="full" /> -->
 </project>

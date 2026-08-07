@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
-  <meta title="Text Alignment" package="hq.flight.samples.textalignment" version="0.1.0" />
+  <meta title="Text Alignment" package="flighthq_ports.openfl.samples.textalignment" version="0.1.0" />
   <app main="Main" file="TextAlignment" />
-  <window width="800" height="600" fps="60" background="0xa0a0a0" hardware="true" vsync="true" />
-  <window hardware="false" if="cairo" />
-  <source path="Source" />
-  <include path="${haxelib:flight}" />
+  <window width="800" height="600" fps="60" background="0xa0a0a0" />
+  <source path="src" />
   <haxelib name="lime" />
-  <haxeflag name="-dce" value="full" />
+  <haxelib name="flight" />
+  <!-- <haxeflag name="-dce" value="full" /> -->
 </project>

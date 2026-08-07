@@ -14,10 +14,11 @@ that platform and are untested.
 ```
 hx/
   build.sh                     compile every project, print a pass/fail table
-  src/DrawingShapes/
+  smoke.sh                     run each built neko app briefly, fail on an uncaught exception
+  DrawingShapes/
     project.xml                standalone Lime app, own <assets> lines
-    Source/Main.hx             the port of ts/src/drawing-shapes
-    Source/LimeCanvas.hx       Lime->Flight adapters and asset loader
+    src/Main.hx                the port of ts/src/drawing-shapes
+    src/LimeCanvas.hx          Lime->Flight adapters and asset loader
 ```
 
 One Lime project per sample, mirroring `ts/src/<sample>/`. Directory names are PascalCase because
@@ -31,11 +32,15 @@ relative ids `ts/` uses, so the Flight call sites read identically in both trees
 
 ```sh
 sudo apt install haxe neko          # or any Haxe 4.3+ toolchain
+sudo apt install xvfb               # only for smoke.sh, to run a headless window
 haxelib setup                       # once, to pick a library directory
 haxelib install lime                # the `lime` command and its ndll
 git clone https://github.com/flighthq/flight-hx
 haxelib dev flight path/to/flight-hx
 ```
+
+Each `project.xml` pulls the SDK in as `<haxelib name="flight" />`, so the `haxelib dev` link above
+is what points the build at your checkout.
 
 ## Building
 
@@ -45,8 +50,15 @@ haxelib dev flight path/to/flight-hx
 ./build.sh neko DrawingShapes       # one target, named projects
 ```
 
-Output lands in `src/<project>/bin/<target>/bin/` and is gitignored; per-project compiler logs go to
-`src/<project>/bin/build-<target>.log`.
+Output lands in `<project>/bin/<target>/bin/` and is gitignored; per-project compiler logs go to
+`<project>/bin/build-<target>.log`.
+
+Compiling is weak evidence on its own — the asset trap below builds clean and dies at startup — so
+after a neko build, run the apps too:
+
+```sh
+./build.sh neko && ./smoke.sh
+```
 
 ## How a port maps onto Lime
 
@@ -64,14 +76,20 @@ the host glue, and it differs the same way every time:
 | `loadImageResourceFromUrl(...)` | `LimeAssets.image(...)` — see below |
 | `loadFontFromUrl(...)` | a bundled TTF registered with the native text backend |
 
-### Two traps worth knowing
+### Three traps worth knowing
+
+**Assets must be `embed="true"`.** Without it the project builds clean and then dies on the first
+frame with `[lime.utils.Assets] ERROR: There is no asset library named "default", or it is not yet
+preloaded` — the non-embedded default library is never preloaded on these targets, so every asset id
+misses. Embedding compiles the bytes into the binary and sidesteps the preload entirely. `smoke.sh`
+exists to catch exactly this, because `build.sh` cannot.
 
 **`loadImageResourceFromUrl` and `loadFontFromUrl` are browser-only.** The generated port drives
 `new Image()`, `img.decode()` and the FontFace API through the JS global object, none of which exist
 on neko. Lime already decodes PNG and TTF on every target, so assets are declared in `project.xml`,
 read through `lime.utils.Assets`, and handed to Flight as raw RGBA bytes via `createBitmap` +
 `createImageResourceFromBitmap` — the same path flight-hx's own examples use. That is what
-`LimeAssets` in `Source/LimeCanvas.hx` wraps; every Flight call site downstream is unchanged.
+`LimeAssets` in `src/LimeCanvas.hx` wraps; every Flight call site downstream is unchanged.
 
 **`GlCanvas.width` / `.height` must be plain fields, not properties.** Flight's GL renderer reads
 them reflectively to build the viewport and the pixel→clip projection. A Haxe `(get, never)`
@@ -85,7 +103,7 @@ background clear still paints, which looks like a working app that renders nothi
 
 | state | samples |
 | --- | --- |
-| ported, builds on neko + html5 | `AddingText`, `CreatingAMainLoop`, `DisplayingABitmap`, `DrawingShapes`, `TicTacToe` |
+| ported; builds on neko + html5 and runs clean under `smoke.sh` | `AddingText`, `CreatingAMainLoop`, `DisplayingABitmap`, `DrawingShapes`, `TicTacToe` |
 | scaffolded (`project.xml` + `LimeCanvas.hx`), `Main.hx` not yet written | the other 21 |
 
 Every project directory exists with its window size, background and assets already wired from the

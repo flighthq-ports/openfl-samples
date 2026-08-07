@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
-  <meta title="GLSL Bitmap" package="hq.flight.samples.glslbitmap" version="0.1.0" />
+  <meta title="GLSL Bitmap" package="flighthq_ports.openfl.samples.glslbitmap" version="0.1.0" />
   <app main="Main" file="GLSLBitmap" />
-  <window width="800" height="600" fps="60" background="0xffffff" hardware="true" vsync="true" />
-  <window hardware="false" if="cairo" />
-  <source path="Source" />
-  <include path="${haxelib:flight}" />
+  <window width="800" height="600" fps="60" background="0xffffff" />
+  <source path="src" />
   <haxelib name="lime" />
-  <haxeflag name="-dce" value="full" />
-  <assets path="../../../assets/images" rename="images" include="openfl_icon_large.png" />
+  <haxelib name="flight" />
+  <!-- <haxeflag name="-dce" value="full" /> -->
+  <!-- The shared corpus at repo-root assets/, mounted under the same relative ids ts/ uses. -->
+  <assets path="../../assets/images" rename="images" include="openfl_icon_large.png" embed="true" />
 </project>

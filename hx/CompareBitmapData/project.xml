@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
-  <meta title="Compare BitmapData" package="hq.flight.samples.comparebitmapdata" version="0.1.0" />
+  <meta title="Compare BitmapData" package="flighthq_ports.openfl.samples.comparebitmapdata" version="0.1.0" />
   <app main="Main" file="CompareBitmapData" />
-  <window width="800" height="600" fps="60" background="0x808080" hardware="true" vsync="true" />
-  <window hardware="false" if="cairo" />
-  <source path="Source" />
-  <include path="${haxelib:flight}" />
+  <window width="800" height="600" fps="60" background="0x808080" />
+  <source path="src" />
   <haxelib name="lime" />
-  <haxeflag name="-dce" value="full" />
-  <assets path="../../../assets/images/32" rename="images/32" include="*.png" />
+  <haxelib name="flight" />
+  <!-- <haxeflag name="-dce" value="full" /> -->
+  <!-- The shared corpus at repo-root assets/, mounted under the same relative ids ts/ uses. -->
+  <assets path="../../assets/images/32" rename="images/32" include="*.png" embed="true" />
 </project>
