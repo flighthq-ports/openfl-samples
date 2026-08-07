@@ -151,8 +151,8 @@ background clear still paints, which looks like a working app that renders nothi
 
 | state | samples |
 | --- | --- |
-| ported; builds and runs clean under `smoke.sh` | `ActuateExample`, `AddingAnimation`, `AddingText`, `AnimatedTilemap`, `CompareBitmapData`, `CreatingAMainLoop`, `DisplayingABitmap`, `DrawingShapes`, `GLSLBitmap`, `HandlingKeyboardEvents`, `HandlingMouseEvents`, `Stage3DCamera`, `Stage3DMipmap`, `TextAlignment`, `TextMetrics`, `TicTacToe`, `WorldClock` |
-| ported and compiling, but faulting at runtime | `Bunnymark`, `HelloTriangle`, `NyanCat`, `PlayingSound`, `SimpleBox2D`, `UsingBitmapData`, `UsingSwfAssets` — see below |
+| ported; builds and runs clean under `smoke.sh` | `ActuateExample`, `AddingAnimation`, `AddingText`, `AnimatedTilemap`, `CompareBitmapData`, `CreatingAMainLoop`, `DisplayingABitmap`, `DrawingShapes`, `GLSLBitmap`, `HandlingKeyboardEvents`, `HandlingMouseEvents`, `Stage3DMipmap`, `TextAlignment`, `TextMetrics`, `TicTacToe`, `WorldClock` |
+| ported and compiling, but faulting at runtime | `Bunnymark`, `HelloTriangle`, `NyanCat`, `PlayingSound`, `SimpleBox2D`, `Stage3DCamera`, `UsingBitmapData`, `UsingSwfAssets` — see below |
 | ported, but its clean `smoke.sh` run proves nothing | `PlayingVideo` — see below |
 | not yet ported | `PiratePig` — 933 lines across `app.ts`, `game.ts` and `tile.ts`; needs its own pass |
 
@@ -170,6 +170,7 @@ what they fault on is a straight report of what the generated Haxe port cannot y
 | `UsingSwfAssets` | `Layout symbol is missing Background` | `createScene2DSymbolFromSwf` returns a document, but `findNodeByName` finds none of its named children |
 | `NyanCat` | `SWF is missing its animated clip` | `createScene2DFromSwf` returns a document whose root has no children |
 | `PlayingSound` | `Runtime: cannot construct a JavaScript global that has no portable implementation on this target` | `new AudioContext()`, which `loadAudioResourceFromUrls` / `playAudioResource` need |
+| `Stage3DCamera` | `Invalid call` | see the one-variable reproducer below |
 | `Bunnymark` | `Unsupported operation` | `createQuadBatch` / `resizeQuadBatch` and the `data.transforms` write path |
 | `UsingBitmapData` | `Invalid field access : width` | one of the bitmap ops, before it reaches the canvas step below |
 
@@ -186,6 +187,14 @@ rather than stubbed, so it will fault on that step outside a browser.
 `TextMetrics` carries a placeholder `TextMeasureFunction` — a flat half-em advance — because `ts/`
 measures through an offscreen 2D canvas and nothing portable replaces that. The layout runs, but the
 metric numbers it reports are not real.
+
+**`Stage3DCamera` vs `Stage3DMipmap` is a one-variable reproducer.** The two `Main.hx` files are
+identical apart from the texture they load — `images/openfl_icon_large.png` (256×256) versus
+`images/checkers.png` (512×512), both power-of-two. Same `createAnisotropicSampler(16)`, same
+`createUnlitMaterial`, same `drawGlScene3D`. The 256×256 one faults with `Invalid call` on every run
+of five; the 512×512 one runs clean on every run of five. Swapping the asset should move the fault.
+
+`HelloTriangle` fails the same way, so `Invalid call` covers at least two distinct Scene3D paths.
 
 The SWF pair corroborate each other: two different SWF entry points, two different files, both decode
 without raising and both yield an empty scene, so SWF parsing looks incomplete rather than misused.
