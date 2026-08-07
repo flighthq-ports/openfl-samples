@@ -160,7 +160,12 @@ Every project directory exists with its window size, background and assets alrea
 matching `ts/src/<sample>/render.webgl.ts`, so an outstanding sample is a `Main.hx` away. `build.sh`
 prints `-` for a project that has not been ported yet, rather than counting it as a failure.
 
-The four runtime failures are wired against the ordinary Flight APIs — no stubs, no workarounds — so
+These were last swept against flight-hx `b47df2f`. That build adds the named Cairo surface
+(`flighthq.scene2dCairo`) and promotes the GL and Cairo window adapters upstream
+(`createGlSurface` / `createCairoSurface`), but it changes none of the faults below — all 26 still
+build, 16 still run clean, and the nine failures reproduce with identical messages.
+
+The runtime failures are wired against the ordinary Flight APIs — no stubs, no workarounds — so
 what they fault on is a straight report of what the generated Haxe port cannot yet do:
 
 | sample | fault | surface |
