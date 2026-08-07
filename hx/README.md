@@ -18,7 +18,8 @@ hx/
   DrawingShapes/
     project.xml                standalone Lime app, own <assets> lines
     src/Main.hx                the port of ts/src/drawing-shapes
-    src/LimeCanvas.hx          Lime->Flight adapters and asset loader
+    src/Renderer.hx            picks the Flight backend from the Lime context type
+    src/LimeCanvas.hx          Lime->Flight surface adapters and asset loader
 ```
 
 One Lime project per sample, mirroring `ts/src/<sample>/`. Directory names are PascalCase because
@@ -45,10 +46,17 @@ is what points the build at your checkout.
 ## Building
 
 ```sh
-./build.sh                          # every project, neko and html5
-./build.sh html5                    # one target
+./build.sh                          # every project, every target
+./build.sh html5-dom                # one target
 ./build.sh neko DrawingShapes       # one target, named projects
 ```
+
+| target | Lime context | Flight backend | `ts/` counterpart |
+| --- | --- | --- | --- |
+| `neko` | `OPENGL` | `scene2dGl` | `render.webgl.ts` |
+| `html5` | `WEBGL` | `scene2dGl` | `render.webgl.ts` |
+| `html5-canvas` | `CANVAS` | `scene2dCanvas` | `render.canvas.ts` |
+| `html5-dom` | `DOM` | `scene2dDom` | `render.dom.ts` |
 
 Output lands in `<project>/bin/<target>/bin/` and is gitignored; per-project compiler logs go to
 `<project>/bin/build-<target>.log`.
@@ -68,13 +76,39 @@ the host glue, and it differs the same way every time:
 
 | `ts/` | here |
 | --- | --- |
-| `render.<backend>.ts` builds the render state over a `<canvas>` | `onWindowCreate` builds it over the Lime window, via `GlCanvas` / `CairoCanvas` |
+| `render.<backend>.ts` builds the render state over a `<canvas>` | `new Renderer(window, background)` in `onWindowCreate` |
+| that module registers the kinds the sample draws | `renderer.useShapes()` / `useSprites()` / `useTextLabels()` / `useRichText()` |
 | `requestAnimationFrame` loop | Lime's `update(deltaTime)`, stepping the Flight app with `stepApplicationLoop` |
 | `render(root)` | Lime's `render(context)` override |
 | `attachPointerInput(input, container)` | Lime's `onMouseDown` / `onMouseMove` / `onMouseUp` |
 | `attachKeyboardInput(input, window)` | Lime's `onKeyDown` / `onKeyUp` |
 | `loadImageResourceFromUrl(...)` | `LimeAssets.image(...)` — see below |
 | `loadFontFromUrl(...)` | a bundled TTF registered with the native text backend |
+
+### Picking a backend
+
+`Renderer` switches on `window.context.type`, which is Lime's own convention, and builds the matching
+Flight render state — `createDomRenderState`, `createCanvasRenderState` or `createGlRenderState`.
+Lime decides the context from the build: `-Ddom` and `-Dcanvas` on html5, otherwise WebGL; on neko,
+OpenGL, or Cairo when the window asks for `hardware="false"`.
+
+A sample never names a backend. It says which *kinds* it draws:
+
+```haxe
+renderer = new Renderer(window, 0xffffffff);
+renderer.useShapes();
+renderer.useTextLabels();
+```
+
+Each `use*` expands to that backend's registration set — including the parts that are easy to forget,
+like the shape rasterizer the DOM and GL backends both need for vector fills but the Canvas backend
+does not. Registering only the kinds a sample draws is deliberate: it is the same explicit opt-in
+`ts/` relies on to let the bundler drop everything else.
+
+**Cairo is its own branch**, even though it currently drives the same Flight canvas entry points as
+`CANVAS`, because cairo-specific entry points are being commissioned upstream. When they land, only
+the `CAIRO` case and the draw switch change. Nothing selects it today — the template has no
+`hardware="false"` window — so the branch compiles but is not exercised.
 
 ### Three traps worth knowing
 
@@ -103,7 +137,7 @@ background clear still paints, which looks like a working app that renders nothi
 
 | state | samples |
 | --- | --- |
-| ported; builds on neko + html5 and runs clean under `smoke.sh` | `AddingText`, `CreatingAMainLoop`, `DisplayingABitmap`, `DrawingShapes`, `TicTacToe` |
+| ported; builds on all four targets and runs clean under `smoke.sh` | `AddingText`, `CreatingAMainLoop`, `DisplayingABitmap`, `DrawingShapes`, `TicTacToe` |
 | scaffolded (`project.xml` + `LimeCanvas.hx`), `Main.hx` not yet written | the other 21 |
 
 Every project directory exists with its window size, background and assets already wired from the

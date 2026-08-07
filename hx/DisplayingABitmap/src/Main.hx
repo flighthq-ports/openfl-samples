@@ -7,8 +7,6 @@
 // and read through `lime.utils.Assets`, then handed to Flight as an ImageResource built from raw RGBA
 // bytes — the same `createImageResourceFromBitmap` path flight-hx's own examples use. Every Flight call
 // site downstream is unchanged.
-import LimeCanvas.CairoCanvas;
-import LimeCanvas.GlCanvas;
 import LimeCanvas.LimeAssets;
 import flighthq.app.App;
 import flighthq.hostLime.LimeApp;
@@ -19,8 +17,7 @@ import lime.graphics.RenderContext;
 
 class Main extends Application {
   var scale:Float = 1.0;
-  var renderState:Dynamic;
-  var usingCairo = false;
+  var renderer:Renderer;
   var ready = false;
 
   var main:DisplayObject;
@@ -31,34 +28,9 @@ class Main extends Application {
 
   override public function onWindowCreate():Void {
     App.setAppBackend(LimeApp.createLimeAppBackend(this));
-    switch (window.context.type) {
-      case CAIRO:
-        usingCairo = true;
-      case OPENGL, OPENGLES, WEBGL:
-      default:
-        throw 'Flight samples require an OpenGL/WebGL or cairo render context.';
-    }
-    scale = window.scale;
-
-    if (usingCairo) {
-      renderState = createCanvasRenderState(new CairoCanvas(window), {
-        pixelRatio: scale,
-        sceneGraphSyncPolicy: 'requiresInvalidation',
-        backgroundColor: 0xffffffff,
-      });
-      registerRenderer(renderState, SpriteKind, defaultCanvasSpriteRenderer);
-      registerCanvasImageTextureResolver(getCanvasRenderStateTextureResolvers(renderState));
-      registerCanvasBitmapTextureResolver(getCanvasRenderStateTextureResolvers(renderState));
-    } else {
-      renderState = createGlRenderState(new GlCanvas(window), {
-        pixelRatio: scale,
-        sceneGraphSyncPolicy: 'requiresInvalidation',
-        backgroundColor: 0xffffffff,
-      });
-      registerRenderer(renderState, SpriteKind, defaultGlSpriteRenderer);
-      registerGlStandardMaterial(renderState);
-      registerStandardGlTextureResolvers(renderState);
-    }
+    renderer = new Renderer(window, 0xffffffff);
+    renderer.useSprites();
+    scale = renderer.scale;
 
     main = createDisplayObject();
     main.scaleX = scale;
@@ -81,16 +53,10 @@ class Main extends Application {
 
   override public function render(context:RenderContext):Void {
     if (!ready || main == null) return;
-    if (!prepareScene2DRender(renderState, main)) {
+    if (!renderer.prepare(main)) {
       window.onRender.cancel();
       return;
     }
-    if (usingCairo) {
-      renderCanvasBackground(renderState);
-      renderCanvasScene2D(renderState, main);
-    } else {
-      renderGlBackground(renderState);
-      renderGlScene2D(renderState, main);
-    }
+    renderer.draw(main);
   }
 }

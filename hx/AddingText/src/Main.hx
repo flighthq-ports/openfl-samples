@@ -4,8 +4,6 @@
 // FontFace API and has no neko equivalent. Lime loads the TTF on every target, so the face is bundled
 // in project.xml and registered with the native canvas backend under the same family name the scene
 // then asks for — leaving `textFormat.font` identical to ts/.
-import LimeCanvas.CairoCanvas;
-import LimeCanvas.GlCanvas;
 import flighthq.app.App;
 import flighthq.hostLime.LimeApp;
 import flighthq.sdk.Sdk.*;
@@ -17,8 +15,7 @@ class Main extends Application {
   static inline final FONT_NAME = 'Katamotz Ikasi';
 
   var scale:Float = 1.0;
-  var renderState:Dynamic;
-  var usingCairo = false;
+  var renderer:Renderer;
   var ready = false;
 
   var root:DisplayObject;
@@ -29,33 +26,9 @@ class Main extends Application {
 
   override public function onWindowCreate():Void {
     App.setAppBackend(LimeApp.createLimeAppBackend(this));
-    switch (window.context.type) {
-      case CAIRO:
-        usingCairo = true;
-      case OPENGL, OPENGLES, WEBGL:
-      default:
-        throw 'Flight samples require an OpenGL/WebGL or cairo render context.';
-    }
-    scale = window.scale;
-    registerBundledFont();
-
-    if (usingCairo) {
-      renderState = createCanvasRenderState(new CairoCanvas(window), {
-        pixelRatio: scale,
-        sceneGraphSyncPolicy: 'requiresInvalidation',
-        backgroundColor: 0xffffffff,
-      });
-      registerRenderer(renderState, TextLabelKind, defaultCanvasTextLabelRenderer);
-    } else {
-      renderState = createGlRenderState(new GlCanvas(window), {
-        pixelRatio: scale,
-        sceneGraphSyncPolicy: 'requiresInvalidation',
-        backgroundColor: 0xffffffff,
-      });
-      registerRenderer(renderState, TextLabelKind, defaultGlTextLabelRenderer);
-      registerGlStandardMaterial(renderState);
-      registerStandardGlTextureResolvers(renderState);
-    }
+    renderer = new Renderer(window, 0xffffffff);
+    renderer.useTextLabels();
+    scale = renderer.scale;
 
     root = createDisplayObject();
     root.scaleX = scale;
@@ -83,16 +56,10 @@ class Main extends Application {
 
   override public function render(context:RenderContext):Void {
     if (!ready || root == null) return;
-    if (!prepareScene2DRender(renderState, root)) {
+    if (!renderer.prepare(root)) {
       window.onRender.cancel();
       return;
     }
-    if (usingCairo) {
-      renderCanvasBackground(renderState);
-      renderCanvasScene2D(renderState, root);
-    } else {
-      renderGlBackground(renderState);
-      renderGlScene2D(renderState, root);
-    }
+    renderer.draw(root);
   }
 }

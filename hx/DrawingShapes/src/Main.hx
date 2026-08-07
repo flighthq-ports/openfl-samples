@@ -3,8 +3,6 @@
 // glue differs — ts/ builds its render state in a `render.<backend>.ts` module and drives the frame
 // with requestAnimationFrame, whereas here the render state is built in `onWindowCreate` over Lime's
 // window and the frame is Lime's own `render` override.
-import LimeCanvas.CairoCanvas;
-import LimeCanvas.GlCanvas;
 import LimeCanvas.LimeAssets;
 import flighthq.app.App;
 import flighthq.hostLime.LimeApp;
@@ -17,8 +15,7 @@ import lime.graphics.RenderContext;
 class Main extends Application {
   // ts/ reads `window.devicePixelRatio || 1`; Lime exposes the same thing as `window.scale`.
   var scale:Float = 1.0;
-  var renderState:Dynamic;
-  var usingCairo = false;
+  var renderer:Renderer;
   var ready = false;
 
   var main:DisplayObject;
@@ -29,35 +26,9 @@ class Main extends Application {
 
   override public function onWindowCreate():Void {
     App.setAppBackend(LimeApp.createLimeAppBackend(this));
-    switch (window.context.type) {
-      case CAIRO:
-        usingCairo = true;
-      case OPENGL, OPENGLES, WEBGL:
-      default:
-        throw 'Flight samples require an OpenGL/WebGL or cairo render context.';
-    }
-    scale = window.scale;
-
-    // ts/src/drawing-shapes/render.webgl.ts and render.canvas.ts, chosen by the context Lime gave us.
-    if (usingCairo) {
-      renderState = createCanvasRenderState(new CairoCanvas(window), {
-        pixelRatio: scale,
-        sceneGraphSyncPolicy: 'requiresInvalidation',
-        backgroundColor: 0xffffffff,
-      });
-      registerRenderer(renderState, ShapeKind, defaultCanvasShapeRenderer);
-      registerCanvasShapeCommands(renderState, defaultCanvasShapeCommands);
-    } else {
-      renderState = createGlRenderState(new GlCanvas(window), {
-        pixelRatio: scale,
-        sceneGraphSyncPolicy: 'requiresInvalidation',
-        backgroundColor: 0xffffffff,
-      });
-      registerRenderer(renderState, ShapeKind, defaultGlShapeRenderer);
-      registerGlShapeCommands(renderState, defaultGlShapeCommands);
-      registerGlShapeRasterizer(renderState, createCanvasShapeRasterizer(createCanvasTextureResolvers()));
-      registerGlStandardMaterial(renderState);
-    }
+    renderer = new Renderer(window, 0xffffffff);
+    renderer.useShapes();
+    scale = renderer.scale;
 
     main = createDisplayObject();
     main.scaleX = scale;
@@ -157,16 +128,10 @@ class Main extends Application {
     // Nothing changed since the last frame: skip the draw and cancel the present, so Lime does not
     // flip to a never-drawn back buffer. The `requiresInvalidation` sync policy is what makes this
     // the common case for a static scene like this one.
-    if (!prepareScene2DRender(renderState, main)) {
+    if (!renderer.prepare(main)) {
       window.onRender.cancel();
       return;
     }
-    if (usingCairo) {
-      renderCanvasBackground(renderState);
-      renderCanvasScene2D(renderState, main);
-    } else {
-      renderGlBackground(renderState);
-      renderGlScene2D(renderState, main);
-    }
+    renderer.draw(main);
   }
 }
