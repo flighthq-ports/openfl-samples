@@ -42,4 +42,13 @@ class RenderCanvas {
     return false;
     #end
   }
+
+  // ts/src/pirate-pig/render.webgl.ts bakes the score panel's blur into an offscreen pass
+  // (createBlurEffect -> computeRenderEffectPadding -> a cached render target re-baked on resize).
+  // That is not ported yet, so the panel draws unfiltered here and the refresh hook is a no-op.
+  // ts/'s own DOM backend stubs it the same way.
+  public static function applyBackgroundBlur(node:Dynamic):Void->Void {
+    return function() {};
+  }
+
 }
