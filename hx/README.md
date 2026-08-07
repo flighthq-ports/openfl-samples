@@ -152,12 +152,19 @@ background clear still paints, which looks like a working app that renders nothi
 | state | samples |
 | --- | --- |
 | ported; builds on all four targets and runs clean under `smoke.sh` | `ActuateExample`, `AddingAnimation`, `AddingText`, `AnimatedTilemap`, `CreatingAMainLoop`, `DisplayingABitmap`, `DrawingShapes`, `HandlingKeyboardEvents`, `HandlingMouseEvents`, `TicTacToe`, `WorldClock` |
-| ported and compiling, but faulting at runtime | `SimpleBox2D` — see below; `smoke.sh` reports it |
-| scaffolded (`project.xml`, `LimeCanvas.hx`, the four `Render*.hx`), `Main.hx` not yet written | the other 14 |
+| ported and compiling, but faulting at runtime | `HelloTriangle`, `SimpleBox2D` — see below; `smoke.sh` reports both |
+| scaffolded (`project.xml`, `LimeCanvas.hx`, the four `Render*.hx`), `Main.hx` not yet written | the other 13 |
 
 Every project directory exists with its window size, background and assets already wired from the
 matching `ts/src/<sample>/render.webgl.ts`, so an outstanding sample is a `Main.hx` away. `build.sh`
 prints `-` for a project that has not been ported yet, rather than counting it as a failure.
+
+Both runtime failures are wired against the ordinary Flight APIs — no stubs, no workarounds — so what
+they fault on is a straight report of what the generated Haxe port cannot yet do:
+
+**`HelloTriangle`** builds on both GL targets and dies with `Invalid call` once running. It is a
+plain Scene3D scene: `createMeshGeometry` / `createVertexColorMaterial` / `createMesh`, drawn through
+`createGlRenderEffectPipeline` → `drawGlScene3D`, exactly as `ts/` does it.
 
 **`SimpleBox2D`** is blocked upstream, not here. `flighthq._internal._Runtime` shims the JavaScript
 `Number` global with `isNaN`/`parseInt`/`isFinite`/`isInteger`/`parseFloat`, and the physics code
